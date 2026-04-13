@@ -101,6 +101,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Claude Code
+.claude/
+
 # General
 .DS_Store
 .AppleDouble
