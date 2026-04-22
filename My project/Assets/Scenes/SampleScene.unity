@@ -850,6 +850,9 @@ MonoBehaviour:
   bushDensity: 0.269
   grassDensity: 0.608
   natureSpawnRadius: 0.48
+  wallHeight: 5
+  wallThickness: 1
+  wallMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
   mapParent: {fileID: 1120759022}
 --- !u!4 &863856027
 Transform:

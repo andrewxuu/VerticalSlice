@@ -37,10 +37,16 @@ public class HexMapGenerator : MonoBehaviour
     [Tooltip("Max random XZ offset of nature assets within a tile")]
     public float natureSpawnRadius = 0.3f;
 
+    [Header("Boundary Walls")]
+    public float wallHeight = 5f;
+    public float wallThickness = 1f;
+    public Material wallMaterial;
+
     [Header("References")]
     public Transform mapParent;
 
     private GameObject[,] tiles;
+    private GameObject wallParent;
 
     void Start()
     {
@@ -53,11 +59,11 @@ public class HexMapGenerator : MonoBehaviour
 
         tiles = new GameObject[mapWidth, mapHeight];
 
-        Vector2 terrainOffset  = GetNoiseOffset(seed);
-        Vector2 variantOffset  = GetNoiseOffset(seed + 1);
-        Vector2 treeOffset     = GetNoiseOffset(seed + 2);
-        Vector2 bushOffset     = GetNoiseOffset(seed + 3);
-        Vector2 grassOffset    = GetNoiseOffset(seed + 4);
+        Vector2 terrainOffset = GetNoiseOffset(seed);
+        Vector2 variantOffset = GetNoiseOffset(seed + 1);
+        Vector2 treeOffset    = GetNoiseOffset(seed + 2);
+        Vector2 bushOffset    = GetNoiseOffset(seed + 3);
+        Vector2 grassOffset   = GetNoiseOffset(seed + 4);
 
         for (int x = 0; x < mapWidth; x++)
         {
@@ -76,7 +82,6 @@ public class HexMapGenerator : MonoBehaviour
 
                 tiles[x, z] = tile;
 
-                // Spawn nature assets on land tiles only
                 bool isLand = terrainNoise >= waterThreshold && terrainNoise < mountainThreshold;
                 if (isLand)
                 {
@@ -85,6 +90,66 @@ public class HexMapGenerator : MonoBehaviour
                     TrySpawnNature(grassPrefabs, grassOffset, grassDensity, position, tile.transform, x, z);
                 }
             }
+        }
+
+        BuildWalls();
+    }
+
+    void BuildWalls()
+    {
+        if (wallParent != null)
+            Destroy(wallParent);
+
+        wallParent = new GameObject("BoundaryWalls");
+        wallParent.transform.SetParent(transform);
+
+        float hexWidth  = 2f * gridSize;
+        float hexHeight = Mathf.Sqrt(3f) * gridSize;
+
+        float horizontalDistance = hexWidth * (3f / 4f);
+        float verticalDistance   = hexHeight;
+
+        float halfX = (mapWidth  - 1) * horizontalDistance / 2f;
+        float halfZ = (mapHeight - 1) * verticalDistance   / 2f;
+
+        float padX = hexWidth  / 2f + wallThickness / 2f;
+        float padZ = hexHeight / 2f + wallThickness / 2f;
+
+        float totalX = halfX * 2f + padX * 2f;
+        float totalZ = halfZ * 2f + padZ * 2f;
+        float wallY  = wallHeight / 2f;
+
+        SpawnWall("Wall_North", new Vector3(0f,             wallY, -(halfZ + padZ)), new Vector3(totalX,        wallHeight, wallThickness));
+        SpawnWall("Wall_South", new Vector3(0f,             wallY,  (halfZ + padZ)), new Vector3(totalX,        wallHeight, wallThickness));
+        SpawnWall("Wall_East",  new Vector3( (halfX + padX), wallY, 0f),             new Vector3(wallThickness, wallHeight, totalZ));
+        SpawnWall("Wall_West",  new Vector3(-(halfX + padX), wallY, 0f),             new Vector3(wallThickness, wallHeight, totalZ));
+    }
+
+    void SpawnWall(string wallName, Vector3 position, Vector3 size)
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = wallName;
+        wall.transform.SetParent(wallParent.transform);
+        wall.transform.position = position;
+        wall.transform.localScale = size;
+
+        if (wallMaterial != null)
+        {
+            wall.GetComponent<Renderer>().material = wallMaterial;
+        }
+        else
+        {
+            Material transparentMat = new Material(Shader.Find("Standard"));
+            transparentMat.SetFloat("_Mode", 3);
+            transparentMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            transparentMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            transparentMat.SetInt("_ZWrite", 0);
+            transparentMat.DisableKeyword("_ALPHATEST_ON");
+            transparentMat.EnableKeyword("_ALPHABLEND_ON");
+            transparentMat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            transparentMat.renderQueue = 3000;
+            transparentMat.color = new Color(0.8f, 0.9f, 1f, 0.15f);
+            wall.GetComponent<Renderer>().material = transparentMat;
         }
     }
 
@@ -95,16 +160,13 @@ public class HexMapGenerator : MonoBehaviour
         float noiseValue = SampleNoise(x, z, noiseOffset, noiseScale);
         if (noiseValue > density) return;
 
-        // Pick a random variant
         int index = Random.Range(0, prefabs.Length);
         GameObject prefab = prefabs[index];
         if (prefab == null) return;
 
-        // Random offset 
         Vector2 randomOffset = Random.insideUnitCircle * natureSpawnRadius;
         Vector3 spawnPosition = tilePosition + new Vector3(randomOffset.x, 0f, randomOffset.y);
 
-        // Random Y rotation 
         Quaternion rotation = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
 
         GameObject asset = Instantiate(prefab, spawnPosition, rotation);
@@ -163,19 +225,18 @@ public class HexMapGenerator : MonoBehaviour
     {
         bool shouldOffset = (x % 2) == 0;
 
-        float width = 2f * gridSize;
+        float width  = 2f * gridSize;
         float height = Mathf.Sqrt(3f) * gridSize;
 
         float horizontalDistance = width * (3f / 4f);
-        float verticalDistance = height;
+        float verticalDistance   = height;
 
-        float offset = shouldOffset ? height / 2f : 0f;
+        float offset    = shouldOffset ? height / 2f : 0f;
         float xPosition = x * horizontalDistance;
         float zPosition = (z * verticalDistance) - offset;
 
-        // Calculate center offset so map is centered on origin
-        float centerX = (mapWidth - 1) * horizontalDistance / 2f;
-        float centerZ = (mapHeight - 1) * verticalDistance / 2f;
+        float centerX = (mapWidth  - 1) * horizontalDistance / 2f;
+        float centerZ = (mapHeight - 1) * verticalDistance   / 2f;
 
         return new Vector3(xPosition - centerX, 0, -zPosition + centerZ);
     }
