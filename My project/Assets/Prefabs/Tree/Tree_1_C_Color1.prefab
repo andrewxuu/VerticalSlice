@@ -63,6 +63,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Tree_1_C_Color1
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7eaba3d680a2fda48833b8aa68e4284b,
+        type: 3}
+      propertyPath: m_TagString
+      value: Tree
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

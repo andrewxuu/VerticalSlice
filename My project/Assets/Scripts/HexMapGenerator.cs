@@ -21,7 +21,6 @@ public class HexMapGenerator : MonoBehaviour
 
     [Header("Mountain Variants")]
     public GameObject[] mountainPrefabs;
-    [Tooltip("Lower = larger clusters of same variant, Higher = more variety per tile")]
     public float mountainVariantScale = 3f;
 
     [Header("Nature Assets")]
@@ -34,7 +33,6 @@ public class HexMapGenerator : MonoBehaviour
     [Range(0f, 1f)] public float bushDensity = 0.4f;
     [Range(0f, 1f)] public float grassDensity = 0.5f;
 
-    [Tooltip("Max random XZ offset of nature assets within a tile")]
     public float natureSpawnRadius = 0.3f;
 
     [Header("Boundary Walls")]
