@@ -73,6 +73,15 @@ public class HexMapGenerator : MonoBehaviour
                 if (prefab == null) continue;
 
                 Vector3 position = GetHexPosition(x, z);
+                bool isMountain = terrainNoise >= mountainThreshold;
+                if (isMountain && landPrefab != null)
+                {
+                    GameObject grassBase = Instantiate(landPrefab, position, Quaternion.identity);
+                    grassBase.transform.Rotate(0, 90, 0);
+                    grassBase.transform.SetParent(mapParent);
+                    grassBase.name = $"GrassBase_{x}_{z}";
+                }
+
                 GameObject tile = Instantiate(prefab, position, Quaternion.identity);
                 tile.transform.Rotate(0, 90, 0);
                 tile.transform.SetParent(mapParent);
