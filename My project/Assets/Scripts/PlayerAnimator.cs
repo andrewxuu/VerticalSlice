@@ -22,10 +22,9 @@ public class PlayerAnimator : MonoBehaviour
         lastPosition = playerRoot.position;
 
         float speed = new Vector3(delta.x, 0f, delta.z).magnitude / Time.deltaTime;
-        float directionZ = delta.z / Time.deltaTime;
+        float dot = Vector3.Dot(delta.normalized, playerRoot.forward);
 
-        Debug.Log("Speed: " + speed + " | DirectionZ: " + directionZ);
-        Debug.Log("Current Animator State: " + animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") + " Idle | " + animator.GetCurrentAnimatorStateInfo(0).IsName("Walk") + " Walk | " + animator.GetCurrentAnimatorStateInfo(0).IsName("Backwards") + " Backwards");
+        float directionZ = (dot < -0.3f) ? -speed : speed;
 
         animator.SetFloat("speed", speed);
         animator.SetFloat("DirectionZ", directionZ);

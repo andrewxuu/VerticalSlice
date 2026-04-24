@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Character
   - Tree
+  - Rock
+  - Environment
   layers:
   - Default
   - TransparentFX
