@@ -1,4 +1,6 @@
 using UnityEngine;
+using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 
 public class ThirdPersonCamera : MonoBehaviour
 {
@@ -20,6 +22,8 @@ public class ThirdPersonCamera : MonoBehaviour
 
     void LateUpdate()
     {
+        if (IsInventoryOpen()) return;
+
         rotX += Input.GetAxis("Mouse X") * sensitivity;
         rotY -= Input.GetAxis("Mouse Y") * sensitivity;
         rotY = Mathf.Clamp(rotY, minY, maxY);
@@ -29,5 +33,17 @@ public class ThirdPersonCamera : MonoBehaviour
         transform.LookAt(player.position + Vector3.up * heightOffset);
 
         player.rotation = Quaternion.Euler(0, rotX, 0);
+    }
+
+    bool IsInventoryOpen()
+    {
+        try
+        {
+            return (bool)Variables.Scene(SceneManager.GetActiveScene()).Get("isOpen");
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
