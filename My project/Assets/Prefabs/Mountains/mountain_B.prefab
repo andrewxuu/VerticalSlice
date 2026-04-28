@@ -63,6 +63,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: mountain_B
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ecaebe06fde664245bb0a3231dd5735e,
+        type: 3}
+      propertyPath: m_TagString
+      value: Rock
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
