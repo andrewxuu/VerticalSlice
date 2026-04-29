@@ -14,9 +14,13 @@ public class InventorySlotUI : MonoBehaviour
 
     public void SetItem(ItemData item, int count)
     {
-        iconImage.sprite  = item.icon;
-        iconImage.enabled = item.icon != null;
-        countText.text    = count > 1 ? count.ToString() : "";
+        if (iconImage != null)
+        {
+            iconImage.sprite  = item.icon;
+            iconImage.enabled = item.icon != null;
+        }
+        if (countText != null)
+            countText.text = count > 1 ? count.ToString() : "";
     }
 
     public void Clear()

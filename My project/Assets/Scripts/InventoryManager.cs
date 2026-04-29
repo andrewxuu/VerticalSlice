@@ -79,13 +79,13 @@ public class InventoryManager : MonoBehaviour
         if (slots == null) return;
 
         foreach (var slot in slots)
-            slot.Clear();
+            if (slot != null) slot.Clear();
 
         int i = 0;
         foreach (var kvp in inventory)
         {
             if (i >= slots.Length) break;
-            slots[i].SetItem(kvp.Key, kvp.Value);
+            if (slots[i] != null) slots[i].SetItem(kvp.Key, kvp.Value);
             i++;
         }
     }

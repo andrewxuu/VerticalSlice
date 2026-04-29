@@ -220,7 +220,7 @@ GameObject:
   - component: {fileID: 3878230228398246299}
   - component: {fileID: 796200068596100848}
   - component: {fileID: 6221478297133873676}
-  - component: {fileID: 8018502181525768897}
+  - component: {fileID: 7896298699120965475}
   m_Layer: 0
   m_Name: Inventory Slot
   m_TagString: Untagged
@@ -287,7 +287,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &8018502181525768897
+--- !u!114 &7896298699120965475
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
