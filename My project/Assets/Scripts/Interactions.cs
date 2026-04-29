@@ -7,14 +7,24 @@ public class Interactions : MonoBehaviour
     public float interactRange = 2f;
     public float chopTime = 2f;
 
+    [Header("Item Drops")]
+    public ItemData woodItem;
+    public ItemData stoneItem;
+
     [Header("UI")]
     public Slider progressBar;
     public GameObject progressBarContainer;
 
+    [Header("Drop Visuals")]
+    public GameObject woodDropPrefab;
+    public GameObject stoneDropPrefab;
+    public float dropUpForce = 3f;
+    public float dropLifetime = 3f;
+
     private Animator animator;
     private float chopProgress = 0f;
     private GameObject currentTarget;
-    private string currentTag;
+    private ItemData currentDrop;
 
     void Start()
     {
@@ -38,7 +48,7 @@ public class Interactions : MonoBehaviour
                     {
                         ResetChop();
                         currentTarget = hit.collider.gameObject;
-                        currentTag = isTree ? "Tree" : "Rock";
+                        currentDrop   = isTree ? woodItem : stoneItem;
                     }
 
                     animator.SetBool("isChopping", true);
@@ -50,8 +60,12 @@ public class Interactions : MonoBehaviour
 
                     if (chopProgress >= chopTime)
                     {
-                        string itemName = currentTag == "Tree" ? "Wood" : "Stone";
-                        InventoryManager.Instance.AddItem(itemName);
+                        if (currentDrop != null)
+                            InventoryManager.Instance.AddItem(currentDrop);
+                        else
+                            Debug.LogWarning("[Interactions] currentDrop is null — assign ItemData in Inspector.");
+
+                        SpawnDrop(currentDrop, currentTarget.transform.position);
                         Destroy(currentTarget);
                         ResetChop();
                     }
@@ -64,11 +78,29 @@ public class Interactions : MonoBehaviour
         ResetChop();
     }
 
+    void SpawnDrop(ItemData item, Vector3 position)
+    {
+        GameObject prefab = item == woodItem ? woodDropPrefab : stoneDropPrefab;
+        if (prefab == null) return;
+
+        Vector3 spawnPos = position + Vector3.up * 0.5f;
+        GameObject drop = Instantiate(prefab, spawnPos, Random.rotation);
+
+        Rigidbody rb = drop.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            Vector3 randomSideways = new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
+            rb.AddForce((Vector3.up + randomSideways) * dropUpForce, ForceMode.Impulse);
+        }
+
+        Destroy(drop, dropLifetime);
+    }
+
     void ResetChop()
     {
         chopProgress = 0f;
         currentTarget = null;
-        currentTag = null;
+        currentDrop   = null;
         animator.SetBool("isChopping", false);
         SetProgressBarVisible(false);
         if (progressBar != null)

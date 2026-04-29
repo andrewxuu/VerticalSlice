@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    [Header("UI")]
-    public TextMeshProUGUI inventoryDisplayText;
+    [Header("UI Slots")]
+    public InventorySlotUI[] slots;
 
-    private Dictionary<string, int> inventory = new Dictionary<string, int>();
+    [Header("Item Registry")]
+    public ItemData[] allItems;
+
+    private Dictionary<ItemData, int> inventory = new Dictionary<ItemData, int>();
 
     void Awake()
     {
@@ -21,28 +23,70 @@ public class InventoryManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    public void AddItem(string itemName, int amount = 1)
+    public int AddItem(ItemData item, int amount = 1)
     {
-        if (inventory.ContainsKey(itemName))
-            inventory[itemName] += amount;
-        else
-            inventory[itemName] = amount;
+        if (item == null) { Debug.LogWarning("[Inventory] AddItem called with null ItemData."); return 0; }
 
-        Debug.Log($"[Inventory] +{amount} {itemName}  (Total: {inventory[itemName]})");
+        int current = GetItemCount(item);
+        int canAdd  = Mathf.Clamp(amount, 0, item.maxStackSize - current);
+
+        if (canAdd <= 0)
+        {
+            Debug.Log($"[Inventory] {item.itemName} is full (max {item.maxStackSize}).");
+            return 0;
+        }
+
+        inventory[item] = current + canAdd;
+        Debug.Log($"[Inventory] +{canAdd} {item.itemName}  (Total: {inventory[item]}/{item.maxStackSize})");
+
         RefreshUI();
+        return canAdd;
     }
 
-    public int GetItemCount(string itemName)
+    public bool RemoveItem(ItemData item, int amount = 1)
     {
-        return inventory.ContainsKey(itemName) ? inventory[itemName] : 0;
+        if (item == null) return false;
+
+        int current = GetItemCount(item);
+        if (current < amount)
+        {
+            Debug.Log($"[Inventory] Not enough {item.itemName} to remove {amount} (have {current}).");
+            return false;
+        }
+
+        inventory[item] = current - amount;
+        if (inventory[item] == 0)
+            inventory.Remove(item);
+
+        Debug.Log($"[Inventory] -{amount} {item.itemName}");
+
+        RefreshUI();
+        return true;
+    }
+
+    public int GetItemCount(ItemData item)
+    {
+        return (item != null && inventory.ContainsKey(item)) ? inventory[item] : 0;
+    }
+
+    public bool HasItem(ItemData item, int amount = 1)
+    {
+        return GetItemCount(item) >= amount;
     }
 
     void RefreshUI()
     {
-        if (inventoryDisplayText == null) return;
-        var sb = new System.Text.StringBuilder();
+        if (slots == null) return;
+
+        foreach (var slot in slots)
+            slot.Clear();
+
+        int i = 0;
         foreach (var kvp in inventory)
-            sb.AppendLine($"{kvp.Key}  x{kvp.Value}");
-        inventoryDisplayText.text = sb.ToString();
+        {
+            if (i >= slots.Length) break;
+            slots[i].SetItem(kvp.Key, kvp.Value);
+            i++;
+        }
     }
 }
