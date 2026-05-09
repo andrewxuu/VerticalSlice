@@ -1,14 +1,15 @@
 using UnityEngine;
-using Unity.VisualScripting;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Physics")]
     public float gravity = -9.81f;
 
-    [Header("Animation")]
-    [Tooltip("How quickly walk/run blend. Only active while moving.")]
-    public float animSmoothSpeed = 10f;
+    [Header("Movement Speeds")]
+    [Tooltip("Must match the walk speed in your VS graph")]
+    public float walkSpeed = 5f;
+    [Tooltip("Must match the run speed in your VS graph")]
+    public float runSpeed  = 9f;
 
     private CharacterController controller;
     private Animator animator;
@@ -41,26 +42,17 @@ public class PlayerController : MonoBehaviour
 
         float horizontal = new Vector3(delta.x, 0f, delta.z).magnitude;
         bool  isMoving   = horizontal > 0.001f;
+        bool  isRunning  = Input.GetKey(KeyCode.LeftShift);
 
-        float smoothSpeed;
-        if (!isMoving)
-        {
-            smoothSpeed = 0f;
-        }
-        else
-        {
-            float targetSpeed;
-            try   { targetSpeed = (float)Variables.Object(gameObject).Get("speed"); }
-            catch { targetSpeed = horizontal / Time.deltaTime; }
-
-            smoothSpeed = Mathf.Lerp(animator.GetFloat("speed"), targetSpeed, Time.deltaTime * animSmoothSpeed);
-        }
+        float speed = 0f;
+        if (isMoving)
+            speed = isRunning ? runSpeed : walkSpeed;
 
         float dirZ = Vector3.Dot(delta.normalized, transform.forward) < -0.3f
-            ? -smoothSpeed
-            :  smoothSpeed;
+            ? -speed
+            :  speed;
 
-        animator.SetFloat("speed",      smoothSpeed);
+        animator.SetFloat("speed",      speed);
         animator.SetFloat("DirectionZ", dirZ);
     }
 }

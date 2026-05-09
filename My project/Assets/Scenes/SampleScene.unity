@@ -2330,7 +2330,6 @@ GameObject:
   - component: {fileID: 577859805}
   - component: {fileID: 577859804}
   - component: {fileID: 577859814}
-  - component: {fileID: 577859815}
   - component: {fileID: 577859816}
   - component: {fileID: 577859817}
   m_Layer: 0
@@ -2469,21 +2468,6 @@ CapsuleCollider:
   m_Height: 2.11
   m_Direction: 1
   m_Center: {x: 0, y: 1.11, z: 0}
---- !u!114 &577859815
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 577859803}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 887724453fbc80d4b9cf3d86060f39a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controller: {fileID: 0}
-  velocityY: 0
-  gravity: -9.81
 --- !u!114 &577859816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2508,6 +2492,7 @@ MonoBehaviour:
     type: 3}
   dropUpForce: 3
   dropLifetime: 3
+  highlightColor: {r: 1, g: 0.85, b: 0.3, a: 1}
 --- !u!114 &577859817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2521,6 +2506,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravity: -9.81
+  walkSpeed: 5
+  runSpeed: 9
 --- !u!224 &660891360 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3878230228398246299, guid: c3b7a957e9cc8f349994ffed01aa7b78,
@@ -4501,7 +4488,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1875525628}
-  - component: {fileID: 1875525629}
   m_Layer: 0
   m_Name: DayNightUI
   m_TagString: Untagged
@@ -4526,44 +4512,6 @@ Transform:
   - {fileID: 203650811}
   m_Father: {fileID: 182010792}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1875525629
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1875525627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64b1b99008ca60a459c05b3d09c1fa37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dayNightLighting: {fileID: 0}
-  sunImage: {fileID: 743720712}
-  moonImage: {fileID: 203650809}
-  fadeStartDay: 0.4
-  fadeEndNight: 0.6
-  fadeStartDawn: 0.944
-  dayColor:
-    r: 1
-    g: 1
-    b: 1
-    a: 1
-  duskColor:
-    r: 1
-    g: 0.26652315
-    b: 0.10196078
-    a: 1
-  nightColor:
-    r: 1
-    g: 1
-    b: 1
-    a: 1
-  dawnColor:
-    r: 0.9811321
-    g: 0.6013
-    b: 0.0786757
-    a: 1
 --- !u!224 &1885923276 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3878230228398246299, guid: c3b7a957e9cc8f349994ffed01aa7b78,
