@@ -8,6 +8,7 @@ TagManager:
   - Tree
   - Rock
   - Environment
+  - Campfire
   layers:
   - Default
   - TransparentFX
