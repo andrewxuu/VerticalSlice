@@ -1,0 +1,431 @@
+/* ═══ Utility ═══ */
+.hidden { display: none; }
+
+/* ═══ HUD ═══ */
+.hud { position: absolute; width: 100%; height: 100%; }
+
+.sky-icons { position: absolute; top: 20px; right: 20px; flex-direction: row; }
+.sky-icon { width: 40px; height: 40px; margin-left: 8px; -unity-background-scale-mode: scale-to-fit; }
+
+.chop-bar-container { position: absolute; top: 60px; left: 50%; width: 200px; margin-left: -100px; }
+.chop-bar .unity-progress-bar__background { height: 14px; border-radius: 7px; background-color: rgba(0,0,0,0.5); border-width: 1px; border-color: rgba(90,74,56,0.6); }
+.chop-bar .unity-progress-bar__progress { border-radius: 7px; background-color: rgb(239,159,39); }
+.chop-bar .unity-progress-bar__title { display: none; }
+
+.hotbar { position: absolute; bottom: 24px; left: 50%; margin-left: -288px; flex-direction: row; padding: 6px; background-color: rgba(42,31,20,0.8); border-radius: 14px; border-width: 1.5px; border-color: rgba(90,74,56,0.7); }
+.hb-slot { width: 60px; height: 60px; margin: 0 3px; background-color: rgba(58,42,26,0.7); border-width: 1px; border-color: rgba(90,74,56,0.5); border-radius: 10px; align-items: center; justify-content: center; }
+.slot-icon { width: 36px; height: 36px; -unity-background-scale-mode: scale-to-fit; }
+.slot-count { position: absolute; bottom: 2px; right: 6px; font-size: 11px; color: rgb(232,220,200); -unity-font-style: bold; }
+
+/* ═══ PANEL OVERLAY ═══ */
+.panel-overlay { position: absolute; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: rgba(28,31,46,0.85); }
+
+/* ═══ WOOD PLANK FRAME ═══ */
+.wood-frame {
+    width: 92%;
+    height: 85%;
+    max-width: 1100px;
+    max-height: 680px;
+    background-color: rgb(139, 90, 43);
+    border-radius: 16px;
+    border-width: 10px;
+    border-color: rgb(61, 36, 16);
+    overflow: hidden;
+    flex-direction: column;
+}
+
+/* Header */
+.frame-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: rgb(139, 90, 43);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(107, 68, 35);
+}
+
+.header-left { flex-direction: row; align-items: center; }
+.header-right { flex-direction: row; align-items: center; }
+
+.rivet {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgb(61, 36, 16);
+    border-width: 2px;
+    border-color: rgb(201, 154, 106);
+    margin-right: 12px;
+}
+
+.frame-title {
+    font-size: 18px;
+    color: rgb(244, 228, 201);
+    -unity-font-style: bold;
+}
+
+/* Snow interior */
+.snow-interior {
+    flex-grow: 1;
+    background-color: rgb(232, 241, 248);
+    padding: 20px;
+}
+
+/* Footer */
+.frame-footer {
+    padding: 8px 20px;
+    background-color: rgb(139, 90, 43);
+    border-top-width: 1px;
+    border-top-color: rgb(107, 68, 35);
+    align-items: center;
+}
+
+.footer-hint {
+    font-size: 11px;
+    color: rgb(244, 228, 201);
+    opacity: 0.8;
+}
+
+/* ═══ THREE COLUMN LAYOUT ═══ */
+.three-col {
+    flex-direction: row;
+    flex-grow: 1;
+    justify-content: space-between;
+}
+
+.col-left {
+    width: 220px;
+    padding-right: 16px;
+}
+
+.col-center {
+    flex-grow: 1;
+    padding: 0 16px;
+    align-items: center;
+}
+
+.col-right {
+    width: 250px;
+    padding-left: 16px;
+}
+
+.col-section-label {
+    font-size: 10px;
+    color: rgb(95, 94, 90);
+    -unity-font-style: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.col-divider {
+    height: 1px;
+    background-color: rgb(181, 212, 244);
+    margin: 14px 0;
+}
+
+/* ═══ EQUIPMENT SLOTS ═══ */
+.equip-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+/* Small armor slots */
+.equip-slot-sm {
+    width: 58px;
+    height: 58px;
+    margin: 0 6px 8px 0;
+    background-color: rgb(244, 248, 252);
+    border-width: 1.2px;
+    border-color: rgb(181, 212, 244);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.equip-slot-sm:hover { border-color: rgb(55, 138, 221); }
+
+.equip-slot-empty-dashed {
+    border-color: rgb(181, 212, 244);
+    opacity: 0.7;
+}
+
+.equip-icon-sm {
+    width: 32px;
+    height: 32px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.equip-plus {
+    font-size: 20px;
+    color: rgb(181, 212, 244);
+}
+
+.equip-slot-label {
+    font-size: 9px;
+    color: rgb(95, 94, 90);
+    position: absolute;
+    bottom: -14px;
+}
+
+/* Tool slots (larger) */
+.equip-slot-tool {
+    width: 68px;
+    height: 56px;
+    margin: 0 8px 8px 0;
+    background-color: rgb(244, 248, 252);
+    border-width: 1.8px;
+    border-color: rgb(55, 138, 221);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.equip-slot-tool:hover { background-color: rgb(230, 241, 251); }
+
+.equip-icon-tool {
+    width: 36px;
+    height: 36px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.equip-slot-label-bold {
+    font-size: 9px;
+    color: rgb(44, 44, 42);
+    -unity-font-style: bold;
+    position: absolute;
+    bottom: -14px;
+}
+
+.equip-slot-filled {
+    border-color: rgb(55, 138, 221);
+    background-color: rgb(230, 241, 251);
+}
+
+/* ═══ BACKPACK CARD ═══ */
+.backpack-card {
+    width: 100%;
+    max-width: 400px;
+    background-color: rgb(255, 255, 255);
+    border-width: 1.5px;
+    border-color: rgb(181, 212, 244);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.backpack-header {
+    background-color: rgb(55, 138, 221);
+    padding: 8px 16px;
+    align-items: center;
+}
+
+.backpack-title {
+    font-size: 14px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    letter-spacing: 1px;
+}
+
+.inv-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 16px;
+    justify-content: center;
+}
+
+.inv-slot {
+    width: 54px;
+    height: 54px;
+    margin: 3px;
+    background-color: rgb(244, 248, 252);
+    border-width: 1.2px;
+    border-color: rgb(181, 212, 244);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.inv-slot:hover {
+    border-color: rgb(55, 138, 221);
+    background-color: rgb(230, 241, 251);
+}
+
+.inv-slot-selected {
+    border-color: rgb(55, 138, 221);
+    border-width: 2px;
+    background-color: rgb(225, 240, 255);
+}
+
+.inv-slot-empty {
+    border-color: rgb(181, 212, 244);
+    opacity: 0.5;
+}
+
+.inv-slot-drag-over {
+    border-color: rgb(239, 159, 39);
+    border-width: 2px;
+    background-color: rgb(250, 238, 218);
+}
+
+.slot-icon-lg {
+    width: 32px;
+    height: 32px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.slot-count-lg {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 9px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    background-color: rgb(61, 36, 16);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.slot-name {
+    position: absolute;
+    bottom: -14px;
+    font-size: 8px;
+    color: rgb(95, 94, 90);
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+}
+
+/* Drag ghost */
+.drag-ghost {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    -unity-background-scale-mode: scale-to-fit;
+    opacity: 0.85;
+}
+
+/* ═══ RECIPE LIST (inventory + campfire) ═══ */
+.recipe-list {
+    flex-grow: 1;
+}
+
+.recipe-btn {
+    flex-direction: column;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background-color: rgb(244, 248, 252);
+    border-width: 1.5px;
+    border-color: rgb(181, 212, 244);
+    border-radius: 8px;
+}
+
+.recipe-btn:hover {
+    background-color: rgb(230, 241, 251);
+    border-color: rgb(55, 138, 221);
+}
+
+.recipe-btn:disabled { opacity: 0.4; }
+
+.recipe-title {
+    font-size: 12px;
+    color: rgb(44, 44, 42);
+    -unity-font-style: bold;
+}
+
+.recipe-cost {
+    font-size: 10px;
+    color: rgb(95, 94, 90);
+    margin-top: 2px;
+}
+
+/* ═══ CAMPFIRE PANEL (left side of screen) ═══ */
+#crafting-panel {
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 8%;
+}
+
+.panel-card {
+    width: 340px;
+    background-color: rgb(42, 31, 20);
+    border-radius: 16px;
+    border-width: 2px;
+    border-color: rgb(90, 74, 56);
+    overflow: hidden;
+}
+
+.panel-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background-color: rgb(58, 42, 26);
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(90, 74, 56);
+}
+
+.panel-title {
+    font-size: 17px;
+    color: rgb(245, 220, 192);
+    -unity-font-style: bold;
+}
+
+.panel-hint {
+    font-size: 12px;
+    color: rgb(160, 145, 120);
+}
+
+.section { padding: 16px 20px 8px 20px; }
+
+.section-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.section-label {
+    font-size: 13px;
+    color: rgb(176, 160, 144);
+    -unity-font-style: bold;
+}
+
+.section-value { font-size: 12px; color: rgb(138, 122, 104); }
+
+.fuel-bar { margin-top: 4px; }
+.fuel-bar .unity-progress-bar__background { height: 12px; border-radius: 6px; background-color: rgb(26,20,16); border-width: 1px; border-color: rgb(58,42,26); }
+.fuel-bar .unity-progress-bar__progress { border-radius: 5px; background-color: rgb(239,159,39); }
+.fuel-bar .unity-progress-bar__title { display: none; }
+
+.level-pips { flex-direction: row; margin-top: 8px; }
+.pip { flex-grow: 1; height: 28px; border-radius: 6px; background-color: rgb(58,42,26); border-width: 1px; border-color: rgb(58,42,26); margin-right: 6px; }
+.pip-active { background-color: rgb(29,158,117); border-color: rgb(93,202,165); }
+
+.divider { height: 1px; background-color: rgb(58,42,26); margin: 8px 20px; }
+
+.campfire-recipes { margin: 0 20px; max-height: 150px; }
+.campfire-recipes .recipe-btn { background-color: rgb(58,42,26); border-color: rgb(90,74,56); }
+.campfire-recipes .recipe-btn:hover { background-color: rgb(74,54,34); border-color: rgb(239,159,39); }
+.campfire-recipes .recipe-title { color: rgb(245,220,192); }
+.campfire-recipes .recipe-cost { color: rgb(138,122,104); }
+
+.action-btn {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 20px;
+    padding: 12px 14px;
+    background-color: rgb(42,31,20);
+    border-width: 1px;
+    border-color: rgb(90,74,56);
+    border-radius: 10px;
+}
+.action-btn:hover { background-color: rgb(58,42,26); }
+.action-btn:disabled { opacity: 0.45; }
+.action-title { font-size: 14px; color: rgb(245,220,192); -unity-font-style: bold; }
+.action-cost { font-size: 12px; color: rgb(138,122,104); }
+
+.inv-summary { flex-direction: row; justify-content: center; padding: 12px 20px 16px 20px; margin-top: 8px; }
+.inv-summary-item { font-size: 12px; color: rgb(138,122,104); margin: 0 12px; }

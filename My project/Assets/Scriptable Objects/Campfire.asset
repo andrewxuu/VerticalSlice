@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6828ae8aa929779469486e3e5c4de9a5, type: 3}
+  m_Name: Campfire
+  m_EditorClassIdentifier: 
+  itemName: Campfire
+  maxStackSize: 1
+  icon: {fileID: 21300000, guid: be59b858eb002a941aa20e45bc4880e6, type: 3}
+  heldPrefab: {fileID: 1661447213762934, guid: 2fe7a9ef6e9f71845a2043158d302b34, type: 3}
+  holdOffset: {x: 0, y: 0, z: 0}
+  holdRotation: {x: 0, y: 0, z: 0}
+  isPlaceable: 1
+  placementPrefab: {fileID: 1661447213762934, guid: 2fe7a9ef6e9f71845a2043158d302b34,
+    type: 3}

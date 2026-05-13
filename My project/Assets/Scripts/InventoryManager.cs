@@ -1,17 +1,32 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    [Header("UI Slots")]
-    public InventorySlotUI[] slots;
+    [System.Serializable]
+    public struct InventorySlot
+    {
+        public ItemData item;
+        public int      count;
+    }
 
     [Header("Item Registry")]
     public ItemData[] allItems;
 
-    private Dictionary<ItemData, int> inventory = new Dictionary<ItemData, int>();
+    [Header("Equipment")]
+    [Tooltip("Items whose name contains this string can be equipped in the axe slot.")]
+    public string axeTag = "Axe";
+
+    private static readonly KeyCode[] numberKeys =
+    {
+        KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4,
+        KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8
+    };
+
+    private InventorySlot[] slots;
+    private ItemData        equippedAxe;
+    private int             selectedSlotIndex = -1;
 
     void Awake()
     {
@@ -19,74 +34,215 @@ public class InventoryManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            slots = new InventorySlot[UIManager.SLOT_COUNT];
         }
         else Destroy(gameObject);
     }
 
-    public int AddItem(ItemData item, int amount = 1)
+    void Update()
     {
-        if (item == null) { Debug.LogWarning("[Inventory] AddItem called with null ItemData."); return 0; }
+        // Block number key selection when a UI panel is fully blocking input
+        if (GameState.IsUIOpen()) return;
 
-        int current = GetItemCount(item);
-        int canAdd  = Mathf.Clamp(amount, 0, item.maxStackSize - current);
-
-        if (canAdd <= 0)
+        for (int i = 0; i < numberKeys.Length && i < slots.Length; i++)
         {
-            Debug.Log($"[Inventory] {item.itemName} is full (max {item.maxStackSize}).");
-            return 0;
+            if (Input.GetKeyDown(numberKeys[i]))
+            {
+                // Pressing the same key again deselects
+                SetSelectedSlot(selectedSlotIndex == i ? -1 : i);
+                break;
+            }
         }
-
-        inventory[item] = current + canAdd;
-        Debug.Log($"[Inventory] +{canAdd} {item.itemName}  (Total: {inventory[item]}/{item.maxStackSize})");
-
-        RefreshUI();
-        return canAdd;
     }
 
+    // ── Add item ──────────────────────────────────────────────────────────────
+    public int AddItem(ItemData item, int amount = 1)
+    {
+        if (item == null) { Debug.LogWarning("[Inventory] AddItem called with null."); return 0; }
+
+        int remaining = amount;
+
+        for (int i = 0; i < slots.Length && remaining > 0; i++)
+        {
+            if (slots[i].item != item) continue;
+            int canAdd = Mathf.Min(remaining, item.maxStackSize - slots[i].count);
+            if (canAdd <= 0) continue;
+            slots[i].count += canAdd;
+            remaining      -= canAdd;
+        }
+
+        for (int i = 0; i < slots.Length && remaining > 0; i++)
+        {
+            if (slots[i].item != null) continue;
+            int canAdd = Mathf.Min(remaining, item.maxStackSize);
+            slots[i].item  = item;
+            slots[i].count = canAdd;
+            remaining     -= canAdd;
+        }
+
+        int added = amount - remaining;
+        if (added > 0) Debug.Log($"[Inventory] +{added} {item.itemName}");
+        else           Debug.Log($"[Inventory] No room for {item.itemName}.");
+
+        RefreshUI();
+        return added;
+    }
+
+    // ── Remove item ───────────────────────────────────────────────────────────
     public bool RemoveItem(ItemData item, int amount = 1)
     {
         if (item == null) return false;
+        if (GetItemCount(item) < amount) return false;
 
-        int current = GetItemCount(item);
-        if (current < amount)
+        int remaining = amount;
+        for (int i = slots.Length - 1; i >= 0 && remaining > 0; i--)
         {
-            Debug.Log($"[Inventory] Not enough {item.itemName} to remove {amount} (have {current}).");
-            return false;
+            if (slots[i].item != item) continue;
+            int take = Mathf.Min(remaining, slots[i].count);
+            slots[i].count -= take;
+            remaining      -= take;
+            if (slots[i].count <= 0)
+            {
+                slots[i].item  = null;
+                slots[i].count = 0;
+            }
         }
 
-        inventory[item] = current - amount;
-        if (inventory[item] == 0)
-            inventory.Remove(item);
+        if (selectedSlotIndex >= 0 && slots[selectedSlotIndex].item == null)
+        {
+            selectedSlotIndex = -1;
+            ItemHolder.Instance?.ClearHeldItem();
+        }
 
         Debug.Log($"[Inventory] -{amount} {item.itemName}");
+        RefreshUI();
+        return true;
+    }
+
+    // ── Remove from specific slot (for placement) ─────────────────────────────
+    public bool RemoveFromSlot(int index, int amount = 1)
+    {
+        if (index < 0 || index >= slots.Length) return false;
+        if (slots[index].item == null || slots[index].count < amount) return false;
+
+        slots[index].count -= amount;
+        if (slots[index].count <= 0)
+        {
+            slots[index].item  = null;
+            slots[index].count = 0;
+        }
+
+        if (selectedSlotIndex == index && slots[index].item == null)
+        {
+            selectedSlotIndex = -1;
+            ItemHolder.Instance?.ClearHeldItem();
+        }
 
         RefreshUI();
         return true;
     }
 
+    // ── Count / Has ───────────────────────────────────────────────────────────
     public int GetItemCount(ItemData item)
     {
-        return (item != null && inventory.ContainsKey(item)) ? inventory[item] : 0;
+        if (item == null) return 0;
+        int total = 0;
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].item == item) total += slots[i].count;
+        return total;
     }
 
-    public bool HasItem(ItemData item, int amount = 1)
+    public bool HasItem(ItemData item, int amount = 1) => GetItemCount(item) >= amount;
+
+    // ── Slot access ───────────────────────────────────────────────────────────
+    public InventorySlot GetSlot(int index)
     {
-        return GetItemCount(item) >= amount;
+        if (index < 0 || index >= slots.Length) return default;
+        return slots[index];
     }
 
-    void RefreshUI()
+    public void SwapSlots(int a, int b)
     {
-        if (slots == null) return;
+        if (a < 0 || a >= slots.Length || b < 0 || b >= slots.Length) return;
+        (slots[a], slots[b]) = (slots[b], slots[a]);
 
-        foreach (var slot in slots)
-            if (slot != null) slot.Clear();
+        if (selectedSlotIndex == a || selectedSlotIndex == b)
+            ItemHolder.Instance?.UpdateHeldItem(GetSelectedItem());
 
-        int i = 0;
-        foreach (var kvp in inventory)
+        RefreshUI();
+    }
+
+    // ── Selection ─────────────────────────────────────────────────────────────
+    public int GetSelectedSlotIndex() => selectedSlotIndex;
+
+    public ItemData GetSelectedItem()
+    {
+        if (selectedSlotIndex < 0 || selectedSlotIndex >= slots.Length) return null;
+        return slots[selectedSlotIndex].item;
+    }
+
+    public void SetSelectedSlot(int index)
+    {
+        selectedSlotIndex = index;
+        UIManager.Instance?.RefreshSelectedSlot(selectedSlotIndex);
+        ItemHolder.Instance?.UpdateHeldItem(GetSelectedItem());
+    }
+
+    // ── Equipment ─────────────────────────────────────────────────────────────
+    public ItemData GetEquippedAxe() => equippedAxe;
+    public bool HasAxeEquipped()     => equippedAxe != null;
+
+    public void EquipFromSlot(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= slots.Length) return;
+        ItemData item = slots[slotIndex].item;
+        if (item == null) return;
+
+        if (!item.itemName.ToLower().Contains(axeTag.ToLower()))
         {
-            if (i >= slots.Length) break;
-            if (slots[i] != null) slots[i].SetItem(kvp.Key, kvp.Value);
-            i++;
+            Debug.Log($"[Inventory] {item.itemName} cannot be equipped as an axe.");
+            return;
         }
+
+        if (equippedAxe != null)
+        {
+            ItemData old = equippedAxe;
+            equippedAxe = item;
+            slots[slotIndex].item  = old;
+            slots[slotIndex].count = 1;
+        }
+        else
+        {
+            equippedAxe = item;
+            slots[slotIndex].count--;
+            if (slots[slotIndex].count <= 0)
+            {
+                slots[slotIndex].item  = null;
+                slots[slotIndex].count = 0;
+            }
+        }
+
+        Debug.Log($"[Inventory] Equipped {item.itemName}");
+        RefreshUI();
+    }
+
+    public void UnequipAxe()
+    {
+        if (equippedAxe == null) return;
+        if (AddItem(equippedAxe, 1) > 0)
+        {
+            Debug.Log($"[Inventory] Unequipped {equippedAxe.itemName}");
+            equippedAxe = null;
+        }
+        RefreshUI();
+    }
+
+    // ── UI ────────────────────────────────────────────────────────────────────
+    public void RefreshUI()
+    {
+        if (UIManager.Instance == null) return;
+        UIManager.Instance.RefreshInventorySlots(slots);
+        UIManager.Instance.RefreshEquipment(equippedAxe);
+        UIManager.Instance.RefreshSelectedSlot(selectedSlotIndex);
     }
 }

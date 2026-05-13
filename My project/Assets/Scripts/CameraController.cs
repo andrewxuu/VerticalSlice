@@ -1,6 +1,4 @@
 using UnityEngine;
-using Unity.VisualScripting;
-using UnityEngine.SceneManagement;
 
 public class CameraController : MonoBehaviour
 {
@@ -27,7 +25,7 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (IsInventoryOpen() && invCamPoint != null)
+        if (GameState.IsUIOpen() && invCamPoint != null)
         {
             transform.position = Vector3.Lerp(transform.position, invCamPoint.position, lerpSpeed);
             transform.rotation = Quaternion.Lerp(transform.rotation, invCamPoint.rotation, lerpSpeed);
@@ -43,11 +41,5 @@ public class CameraController : MonoBehaviour
         transform.position = Vector3.Lerp(transform.position, target, lerpSpeed);
         transform.LookAt(player.position + Vector3.up * heightOffset);
         player.rotation = Quaternion.Euler(0, rotX, 0);
-    }
-
-    static bool IsInventoryOpen()
-    {
-        try   { return (bool)Variables.Scene(SceneManager.GetActiveScene()).Get("isOpen"); }
-        catch { return false; }
     }
 }

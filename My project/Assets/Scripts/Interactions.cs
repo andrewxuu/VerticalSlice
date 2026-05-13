@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Interactions : MonoBehaviour
 {
@@ -10,10 +9,6 @@ public class Interactions : MonoBehaviour
     [Header("Item Drops")]
     public ItemData woodItem;
     public ItemData stoneItem;
-
-    [Header("UI")]
-    public Slider     progressBar;
-    public GameObject progressBarContainer;
 
     [Header("Drop Visuals")]
     public GameObject woodDropPrefab;
@@ -36,11 +31,19 @@ public class Interactions : MonoBehaviour
     void Start()
     {
         animator = GetComponentInChildren<Animator>();
-        SetProgressBarVisible(false);
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetChopBarVisible(false);
     }
 
     void Update()
     {
+        if (GameState.IsUIOpen())
+        {
+            ClearHighlight();
+            ResetChop();
+            return;
+        }
+
         GameObject nearest = GetBestInteractable();
 
         if (nearest != highlightedObject)
@@ -62,8 +65,7 @@ public class Interactions : MonoBehaviour
             SetProgressBarVisible(true);
 
             chopProgress += Time.deltaTime;
-            if (progressBar != null)
-                progressBar.value = chopProgress / chopTime;
+            SetChopProgress(chopProgress / chopTime);
 
             if (chopProgress >= chopTime)
             {
@@ -79,6 +81,7 @@ public class Interactions : MonoBehaviour
         ResetChop();
     }
 
+    // ── Facing-weighted selection ──────────────────────────────────────────────
     GameObject GetBestInteractable()
     {
         Collider[] hits      = Physics.OverlapSphere(transform.position, interactRange);
@@ -104,29 +107,7 @@ public class Interactions : MonoBehaviour
         return best;
     }
 
-    void SpawnDrop(ItemData item, Vector3 position)
-    {
-        GameObject prefab = item == woodItem ? woodDropPrefab : stoneDropPrefab;
-        if (prefab == null) return;
-
-        GameObject drop = Instantiate(prefab, position + Vector3.up * 0.5f, Random.rotation);
-
-        PickupDrop pickup = drop.GetComponent<PickupDrop>();
-        if (pickup != null)
-            pickup.item = item;
-        else
-            Debug.LogWarning("[Interactions] PickupDrop component missing on drop prefab.");
-
-        Rigidbody rb = drop.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            Vector3 sideways = new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
-            rb.AddForce((Vector3.up + sideways) * dropUpForce, ForceMode.Impulse);
-        }
-
-        Destroy(drop, dropLifetime);
-    }
-
+    // ── Highlight ──────────────────────────────────────────────────────────────
     void ApplyHighlight(GameObject target)
     {
         highlightedObject    = target;
@@ -152,6 +133,43 @@ public class Interactions : MonoBehaviour
         originalColors       = null;
     }
 
+    // ── Drop spawn ─────────────────────────────────────────────────────────────
+    void SpawnDrop(ItemData item, Vector3 position)
+    {
+        GameObject prefab = item == woodItem ? woodDropPrefab : stoneDropPrefab;
+        if (prefab == null) return;
+
+        GameObject drop = Instantiate(prefab, position + Vector3.up * 0.5f, Random.rotation);
+
+        PickupDrop pickup = drop.GetComponent<PickupDrop>();
+        if (pickup != null)
+            pickup.item = item;
+        else
+            Debug.LogWarning("[Interactions] PickupDrop component missing on drop prefab.");
+
+        Rigidbody rb = drop.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            Vector3 sideways = new Vector3(Random.Range(-0.5f, 0.5f), 0f, Random.Range(-0.5f, 0.5f));
+            rb.AddForce((Vector3.up + sideways) * dropUpForce, ForceMode.Impulse);
+        }
+
+        Destroy(drop, dropLifetime);
+    }
+
+    // ── UI helpers ─────────────────────────────────────────────────────────────
+    void SetChopProgress(float normalized)
+    {
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetChopProgress(normalized);
+    }
+
+    void SetProgressBarVisible(bool visible)
+    {
+        if (UIManager.Instance != null)
+            UIManager.Instance.SetChopBarVisible(visible);
+    }
+
     void ResetChop()
     {
         chopProgress  = 0f;
@@ -159,13 +177,7 @@ public class Interactions : MonoBehaviour
         currentDrop   = null;
         animator.SetBool("isChopping", false);
         SetProgressBarVisible(false);
-        if (progressBar != null) progressBar.value = 0f;
-    }
-
-    void SetProgressBarVisible(bool visible)
-    {
-        if (progressBarContainer != null)
-            progressBarContainer.SetActive(visible);
+        SetChopProgress(0f);
     }
 
     void OnDrawGizmosSelected()

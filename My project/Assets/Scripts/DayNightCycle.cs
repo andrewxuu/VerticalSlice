@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class DayNightCycle : MonoBehaviour
 {
@@ -8,11 +7,11 @@ public class DayNightCycle : MonoBehaviour
     public float dayDuration = 120f;
 
     [HideInInspector] public float timeOfDay;
-    [HideInInspector] public float timeMultiplier = 1f; // Set by CampfireInteraction during timelapse
+    [HideInInspector] public float timeMultiplier = 1f;
 
-    [Header("UI Icons")]
-    public Image sunImage;
-    public Image moonImage;
+    [Header("Icon Sprites")]
+    public Sprite sunSprite;
+    public Sprite moonSprite;
 
     [Header("Crossfade Timing")]
     [Range(0f,   0.5f)] public float fadeStartDay  = 0.4f;
@@ -37,42 +36,40 @@ public class DayNightCycle : MonoBehaviour
 
     void UpdateUI(float t)
     {
-        float sunAlpha, moonAlpha;
+        if (UIManager.Instance == null) return;
+
         Color sunColor, moonColor;
 
         if (t < fadeStartDay)
         {
-            sunAlpha = 1f; moonAlpha = 0f;
-            sunColor = dayColor; moonColor = nightColor;
+            sunColor  = dayColor;
+            moonColor = WithAlpha(nightColor, 0f);
         }
         else if (t < fadeEndNight)
         {
             float f   = Mathf.InverseLerp(fadeStartDay, fadeEndNight, t);
-            sunAlpha  = 1f - f; moonAlpha = f;
-            sunColor  = Color.Lerp(dayColor,  duskColor,  f);
-            moonColor = Color.Lerp(duskColor, nightColor, f);
+            sunColor  = WithAlpha(Color.Lerp(dayColor,  duskColor,  f), 1f - f);
+            moonColor = WithAlpha(Color.Lerp(duskColor, nightColor, f), f);
         }
         else if (t < fadeStartDawn)
         {
-            sunAlpha = 0f; moonAlpha = 1f;
-            sunColor = dayColor; moonColor = nightColor;
+            sunColor  = WithAlpha(dayColor, 0f);
+            moonColor = nightColor;
         }
         else
         {
             float f   = Mathf.InverseLerp(fadeStartDawn, 1f, t);
-            sunAlpha  = f; moonAlpha = 1f - f;
-            sunColor  = Color.Lerp(dawnColor,  dayColor,  f);
-            moonColor = Color.Lerp(nightColor, dawnColor, f);
+            sunColor  = WithAlpha(Color.Lerp(dawnColor,  dayColor,  f), f);
+            moonColor = WithAlpha(Color.Lerp(nightColor, dawnColor, f), 1f - f);
         }
 
-        SetColor(sunImage,  sunColor,  sunAlpha);
-        SetColor(moonImage, moonColor, moonAlpha);
+        UIManager.Instance.SetSunIcon(sunSprite,  sunColor);
+        UIManager.Instance.SetMoonIcon(moonSprite, moonColor);
     }
 
-    void SetColor(Image img, Color color, float alpha)
+    Color WithAlpha(Color c, float a)
     {
-        if (img == null) return;
-        color.a   = alpha;
-        img.color = color;
+        c.a = a;
+        return c;
     }
 }

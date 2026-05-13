@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.VisualScripting;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,19 +13,33 @@ public class PlayerController : MonoBehaviour
     public float runSpeed  = 9f;
 
     private CharacterController controller;
-    private Animator animator;
-    private float velocityY;
-    private Vector3 lastPosition;
+    private ScriptMachine       vsGraph;
+    private Animator            animator;
+    private float               velocityY;
+    private Vector3             lastPosition;
 
     void Start()
     {
         controller   = GetComponent<CharacterController>();
+        vsGraph      = GetComponent<ScriptMachine>();
         animator     = GetComponentInChildren<Animator>();
         lastPosition = transform.position;
     }
 
     void Update()
     {
+        if (GameState.IsUIOpen())
+        {
+            if (vsGraph != null) vsGraph.enabled = false;
+            animator.SetFloat("speed",      0f);
+            animator.SetFloat("DirectionZ", 0f);
+            lastPosition = transform.position;
+            return;
+        }
+
+        if (vsGraph != null && !vsGraph.enabled)
+            vsGraph.enabled = true;
+
         ApplyGravity();
         UpdateAnimation();
     }
