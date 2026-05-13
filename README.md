@@ -34,4 +34,6 @@ Final Devlog goes here.
 - [Environment](https://kaylousberg.itch.io/kaykit-forest) 
 - [Objects](https://kaylousberg.itch.io/resource-bits) 
 - [Player](https://kaylousberg.itch.io/kaykit-character-animations) 
+- [Camping Objects](https://forsunka.itch.io/low-poly-camping-asset)
+
 
