@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (GameState.IsUIOpen() && invCamPoint != null)
+        if (UIManager.IsUIOpen() && invCamPoint != null)
         {
             transform.position = Vector3.Lerp(transform.position, invCamPoint.position, lerpSpeed);
             transform.rotation = Quaternion.Lerp(transform.rotation, invCamPoint.rotation, lerpSpeed);

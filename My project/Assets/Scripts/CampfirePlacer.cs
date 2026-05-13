@@ -1,26 +1,23 @@
 using UnityEngine;
 
-/// Attach to the Player.
-/// Placement is triggered by selecting a placeable item in the inventory
-/// and pressing Q. No separate material cost — the item itself is consumed.
 public class CampfirePlacer : MonoBehaviour
 {
     [Header("Placement")]
     public LayerMask groundLayer;
-    public KeyCode   placeKey        = KeyCode.Q;
+    public KeyCode   placeKey         = KeyCode.Q;
     public float     maxPlaceDistance = 10f;
 
     [Header("Ghost Preview")]
     public Color validColor   = new Color(0f, 1f, 0f, 0.35f);
     public Color invalidColor = new Color(1f, 0f, 0f, 0.35f);
 
-    private bool          isPlacing;
-    private ItemData      placingItem;
-    private int           placingSlotIndex = -1;
-    private GameObject    ghostObject;
-    private Renderer[]    ghostRenderers;
-    private bool          ghostOnGround;
-    private Material      ghostMaterial;
+    private bool       isPlacing;
+    private ItemData   placingItem;
+    private int        placingSlotIndex = -1;
+    private GameObject ghostObject;
+    private Renderer[] ghostRenderers;
+    private bool       ghostOnGround;
+    private Material   ghostMaterial;
 
     void Start()
     {
@@ -38,7 +35,7 @@ public class CampfirePlacer : MonoBehaviour
 
     void Update()
     {
-        if (GameState.IsUIOpen()) { CancelPlacement(); return; }
+        if (UIManager.IsUIOpen()) { CancelPlacement(); return; }
 
         CheckForPlaceableSelection();
 
@@ -46,31 +43,20 @@ public class CampfirePlacer : MonoBehaviour
 
         UpdateGhostPosition();
 
-        if (Input.GetMouseButtonDown(0) && ghostOnGround)
-            PlaceItem();
-
-        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(placeKey))
-            CancelPlacement();
+        if (Input.GetMouseButtonDown(0) && ghostOnGround) PlaceItem();
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyUp(placeKey)) CancelPlacement();
     }
 
-    // ── Watch for Q pressed when a placeable item is selected ─────────────────
     void CheckForPlaceableSelection()
     {
-        if (!Input.GetKeyDown(placeKey)) return;
-        if (isPlacing) return;
+        if (!Input.GetKeyDown(placeKey) || isPlacing) return;
 
         ItemData selected = InventoryManager.Instance?.GetSelectedItem();
-        if (selected == null || !selected.isPlaceable || selected.placementPrefab == null)
-        {
-            Debug.Log("[CampfirePlacer] Selected item is not placeable.");
-            return;
-        }
+        if (selected == null || !selected.isPlaceable || selected.placementPrefab == null) return;
 
-        int slotIndex = InventoryManager.Instance.GetSelectedSlotIndex();
-        StartPlacement(selected, slotIndex);
+        StartPlacement(selected, InventoryManager.Instance.GetSelectedSlotIndex());
     }
 
-    // ── Placement flow ────────────────────────────────────────────────────────
     void StartPlacement(ItemData item, int slotIndex)
     {
         isPlacing        = true;
@@ -80,14 +66,12 @@ public class CampfirePlacer : MonoBehaviour
         ghostObject = Instantiate(item.placementPrefab);
         ghostObject.name = "_PlacementGhost";
 
-        // Strip physics, colliders, and scripts so the ghost is purely visual
         foreach (Collider    col in ghostObject.GetComponentsInChildren<Collider>())    Destroy(col);
         foreach (Rigidbody   rb  in ghostObject.GetComponentsInChildren<Rigidbody>())   Destroy(rb);
         foreach (MonoBehaviour mb in ghostObject.GetComponentsInChildren<MonoBehaviour>()) Destroy(mb);
 
         ghostRenderers = ghostObject.GetComponentsInChildren<Renderer>();
-        foreach (Renderer r in ghostRenderers)
-            r.material = new Material(ghostMaterial);
+        foreach (Renderer r in ghostRenderers) r.material = new Material(ghostMaterial);
 
         ghostObject.SetActive(false);
     }
@@ -121,17 +105,13 @@ public class CampfirePlacer : MonoBehaviour
         Vector3 position = ghostObject.transform.position;
         Destroy(ghostObject);
 
-        // Consume one item from the inventory slot
         InventoryManager.Instance.RemoveFromSlot(placingSlotIndex, 1);
 
-        // Spawn the real prefab
         GameObject placed = Instantiate(placingItem.placementPrefab, position, Quaternion.identity);
         placed.name = placingItem.itemName;
 
-        // Wire up campfire interaction if present
         CampfireInteraction interaction = placed.GetComponent<CampfireInteraction>();
-        if (interaction != null)
-            interaction.player = transform;
+        if (interaction != null) interaction.player = transform;
 
         isPlacing        = false;
         placingItem      = null;
@@ -145,12 +125,5 @@ public class CampfirePlacer : MonoBehaviour
         placingItem      = null;
         placingSlotIndex = -1;
         ghostOnGround    = false;
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (!isPlacing) return;
-        Gizmos.color = new Color(0f, 1f, 0f, 0.2f);
-        Gizmos.DrawSphere(transform.position, maxPlaceDistance);
     }
 }

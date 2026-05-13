@@ -5,14 +5,14 @@ using Unity.VisualScripting;
 public class CampfireInteraction : MonoBehaviour
 {
     [Header("Fuel")]
-    public float maxFuel       = 100f;
-    public float fuelBurnRate  = 1f;
-    public float fuelPerWood   = 25f;
+    public float maxFuel      = 100f;
+    public float fuelBurnRate = 1f;
+    public float fuelPerWood  = 25f;
 
     [Header("Shelter")]
-    public int maxShelterLevel    = 3;
-    public int woodPerUpgrade     = 3;
-    public int stonePerUpgrade    = 2;
+    public int maxShelterLevel = 3;
+    public int woodPerUpgrade  = 3;
+    public int stonePerUpgrade = 2;
 
     [Header("Warmth")]
     public float baseWarmthRadius = 3f;
@@ -39,7 +39,6 @@ public class CampfireInteraction : MonoBehaviour
 
     void Start()
     {
-        // Fire starts cold — no fuel, no light, no VFX
         currentFuel  = 0f;
         shelterLevel = 0;
 
@@ -69,19 +68,14 @@ public class CampfireInteraction : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (menuOpen)
-                CloseMenu();
-            else if (IsPlayerInRange())
-                OpenMenu();
+            if (menuOpen)          CloseMenu();
+            else if (IsInRange())  OpenMenu();
         }
 
-        if (menuOpen && !IsPlayerInRange())
-            CloseMenu();
-
+        if (menuOpen && !IsInRange()) CloseMenu();
         if (menuOpen) RefreshUI();
     }
 
-    // ── Fuel ──────────────────────────────────────────────────────────────────
     void BurnFuel()
     {
         if (currentFuel <= 0f) return;
@@ -95,29 +89,23 @@ public class CampfireInteraction : MonoBehaviour
         currentFuel = Mathf.Min(currentFuel + fuelPerWood, maxFuel);
     }
 
-    // ── Shelter ───────────────────────────────────────────────────────────────
     public void UpgradeShelter()
     {
         if (shelterLevel >= maxShelterLevel) return;
         if (!InventoryManager.Instance.HasItem(woodItem,  woodPerUpgrade))  return;
         if (!InventoryManager.Instance.HasItem(stoneItem, stonePerUpgrade)) return;
-
         InventoryManager.Instance.RemoveItem(woodItem,  woodPerUpgrade);
         InventoryManager.Instance.RemoveItem(stoneItem, stonePerUpgrade);
         shelterLevel++;
     }
 
-    // ── Menu ──────────────────────────────────────────────────────────────────
     void OpenMenu()
     {
         menuOpen = true;
         UIManager.Instance.ShowCraftingPanel();
-
         if (dayNight != null) dayNight.timeMultiplier = 0f;
-
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible   = true;
-
         SetVSOpen(true);
     }
 
@@ -125,12 +113,9 @@ public class CampfireInteraction : MonoBehaviour
     {
         menuOpen = false;
         UIManager.Instance.HideCraftingPanel();
-
         if (dayNight != null) dayNight.timeMultiplier = 1f;
-
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         UnityEngine.Cursor.visible   = false;
-
         SetVSOpen(false);
     }
 
@@ -140,7 +125,6 @@ public class CampfireInteraction : MonoBehaviour
         catch { }
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────────
     void RefreshUI()
     {
         if (UIManager.Instance == null) return;
@@ -154,11 +138,9 @@ public class CampfireInteraction : MonoBehaviour
         UIManager.Instance.SetFuelCost($"1 wood — have: {w}");
         UIManager.Instance.SetWoodCount($"Wood: {w}");
         UIManager.Instance.SetStoneCount($"Stone: {s}");
-
-        if (shelterLevel >= maxShelterLevel)
-            UIManager.Instance.SetUpgradeCost("Maxed out");
-        else
-            UIManager.Instance.SetUpgradeCost($"{woodPerUpgrade}W + {stonePerUpgrade}S — have: {w}W / {s}S");
+        UIManager.Instance.SetUpgradeCost(shelterLevel >= maxShelterLevel
+            ? "Maxed out"
+            : $"{woodPerUpgrade}W + {stonePerUpgrade}S — have: {w}W / {s}S");
 
         UIManager.Instance.SetAddFuelEnabled(InventoryManager.Instance.HasItem(woodItem, 1));
         UIManager.Instance.SetUpgradeEnabled(
@@ -167,37 +149,23 @@ public class CampfireInteraction : MonoBehaviour
             && InventoryManager.Instance.HasItem(stoneItem, stonePerUpgrade));
     }
 
-    // ── Fire visuals ──────────────────────────────────────────────────────────
     void UpdateFireVisuals()
     {
         bool hasFuel = currentFuel > 0f;
+        if (fireVFX   != null) fireVFX.SetActive(hasFuel);
+        if (fireLight == null) return;
 
-        // Toggle VFX on/off based on fuel
-        if (fireVFX != null)
-            fireVFX.SetActive(hasFuel);
-
-        // Scale light by fuel level
-        if (fireLight != null)
-        {
-            if (!hasFuel)
-            {
-                fireLight.intensity = 0f;
-            }
-            else
-            {
-                float fuelRatio = currentFuel / maxFuel;
-                fireLight.intensity = fuelRatio * maxLightIntensity * (1f + shelterLevel * 0.3f);
-                fireLight.range     = baseWarmthRadius + shelterLevel * radiusPerLevel;
-            }
-        }
+        if (!hasFuel) { fireLight.intensity = 0f; return; }
+        float ratio         = currentFuel / maxFuel;
+        fireLight.intensity = ratio * maxLightIntensity * (1f + shelterLevel * 0.3f);
+        fireLight.range     = baseWarmthRadius + shelterLevel * radiusPerLevel;
     }
 
-    // ── Public getters ────────────────────────────────────────────────────────
     public int   GetShelterLevel()  => shelterLevel;
     public float GetWarmthRadius()  => baseWarmthRadius + shelterLevel * radiusPerLevel;
     public bool  HasFuel()          => currentFuel > 0f;
 
-    bool IsPlayerInRange()
+    bool IsInRange()
     {
         if (player == null) return false;
         return Vector3.Distance(transform.position, player.position) <= interactRange;

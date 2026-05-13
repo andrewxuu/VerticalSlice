@@ -15,9 +15,10 @@ MonoBehaviour:
   itemName: Sticks
   maxStackSize: 99
   icon: {fileID: 21300000, guid: c105022d1bb873b4eb65f602c1cfa7d9, type: 3}
+  isPlaceable: 0
+  placementPrefab: {fileID: 0}
   heldPrefab: {fileID: 919132149155446097, guid: 7f818bd50acc4c746aaf9bfffd2d7f78,
     type: 3}
   holdOffset: {x: 0, y: 0, z: 0}
   holdRotation: {x: 0, y: 0, z: 0}
-  isPlaceable: 0
-  placementPrefab: {fileID: 0}
+  holdScale: {x: 1, y: 1, z: 1}

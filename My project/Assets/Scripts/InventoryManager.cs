@@ -41,14 +41,12 @@ public class InventoryManager : MonoBehaviour
 
     void Update()
     {
-        // Block number key selection when a UI panel is fully blocking input
-        if (GameState.IsUIOpen()) return;
+        if (UIManager.IsUIOpen()) return;
 
         for (int i = 0; i < numberKeys.Length && i < slots.Length; i++)
         {
             if (Input.GetKeyDown(numberKeys[i]))
             {
-                // Pressing the same key again deselects
                 SetSelectedSlot(selectedSlotIndex == i ? -1 : i);
                 break;
             }
@@ -101,17 +99,13 @@ public class InventoryManager : MonoBehaviour
             int take = Mathf.Min(remaining, slots[i].count);
             slots[i].count -= take;
             remaining      -= take;
-            if (slots[i].count <= 0)
-            {
-                slots[i].item  = null;
-                slots[i].count = 0;
-            }
+            if (slots[i].count <= 0) { slots[i].item = null; slots[i].count = 0; }
         }
 
         if (selectedSlotIndex >= 0 && slots[selectedSlotIndex].item == null)
         {
             selectedSlotIndex = -1;
-            ItemHolder.Instance?.ClearHeldItem();
+            PlayerController.Instance?.ClearHeldItem();
         }
 
         Debug.Log($"[Inventory] -{amount} {item.itemName}");
@@ -119,23 +113,19 @@ public class InventoryManager : MonoBehaviour
         return true;
     }
 
-    // ── Remove from specific slot (for placement) ─────────────────────────────
+    // ── Remove from slot (for placement) ──────────────────────────────────────
     public bool RemoveFromSlot(int index, int amount = 1)
     {
         if (index < 0 || index >= slots.Length) return false;
         if (slots[index].item == null || slots[index].count < amount) return false;
 
         slots[index].count -= amount;
-        if (slots[index].count <= 0)
-        {
-            slots[index].item  = null;
-            slots[index].count = 0;
-        }
+        if (slots[index].count <= 0) { slots[index].item = null; slots[index].count = 0; }
 
         if (selectedSlotIndex == index && slots[index].item == null)
         {
             selectedSlotIndex = -1;
-            ItemHolder.Instance?.ClearHeldItem();
+            PlayerController.Instance?.ClearHeldItem();
         }
 
         RefreshUI();
@@ -143,7 +133,7 @@ public class InventoryManager : MonoBehaviour
     }
 
     // ── Count / Has ───────────────────────────────────────────────────────────
-    public int GetItemCount(ItemData item)
+    public int  GetItemCount(ItemData item)
     {
         if (item == null) return 0;
         int total = 0;
@@ -165,16 +155,13 @@ public class InventoryManager : MonoBehaviour
     {
         if (a < 0 || a >= slots.Length || b < 0 || b >= slots.Length) return;
         (slots[a], slots[b]) = (slots[b], slots[a]);
-
         if (selectedSlotIndex == a || selectedSlotIndex == b)
-            ItemHolder.Instance?.UpdateHeldItem(GetSelectedItem());
-
+            PlayerController.Instance?.UpdateHeldItem(GetSelectedItem());
         RefreshUI();
     }
 
     // ── Selection ─────────────────────────────────────────────────────────────
-    public int GetSelectedSlotIndex() => selectedSlotIndex;
-
+    public int     GetSelectedSlotIndex() => selectedSlotIndex;
     public ItemData GetSelectedItem()
     {
         if (selectedSlotIndex < 0 || selectedSlotIndex >= slots.Length) return null;
@@ -185,7 +172,7 @@ public class InventoryManager : MonoBehaviour
     {
         selectedSlotIndex = index;
         UIManager.Instance?.RefreshSelectedSlot(selectedSlotIndex);
-        ItemHolder.Instance?.UpdateHeldItem(GetSelectedItem());
+        PlayerController.Instance?.UpdateHeldItem(GetSelectedItem());
     }
 
     // ── Equipment ─────────────────────────────────────────────────────────────
@@ -215,11 +202,7 @@ public class InventoryManager : MonoBehaviour
         {
             equippedAxe = item;
             slots[slotIndex].count--;
-            if (slots[slotIndex].count <= 0)
-            {
-                slots[slotIndex].item  = null;
-                slots[slotIndex].count = 0;
-            }
+            if (slots[slotIndex].count <= 0) { slots[slotIndex].item = null; slots[slotIndex].count = 0; }
         }
 
         Debug.Log($"[Inventory] Equipped {item.itemName}");

@@ -76,6 +76,27 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // ── GameState (folded in from GameState.cs) ───────────────────────────────
+    // Any script that previously called GameState.IsUIOpen() now calls UIManager.IsUIOpen()
+    public static bool IsUIOpen()
+    {
+        // Check VS scene variable (used by the movement graph)
+        try
+        {
+            if ((bool)Variables.Scene(SceneManager.GetActiveScene()).Get("isOpen"))
+                return true;
+        }
+        catch { }
+
+        if (Instance != null)
+        {
+            if (Instance.IsInventoryOpen()) return true;
+            if (Instance.IsCraftingOpen())  return true;
+        }
+
+        return false;
+    }
+
     // ── Queries ───────────────────────────────────────────────────────────────
     void QueryHUD()
     {
@@ -138,7 +159,38 @@ public class UIManager : MonoBehaviour
         campfireRecipeList = root.Q<ScrollView>("campfire-recipe-list");
     }
 
-    // ── Inventory interaction: click to select, drag to rearrange ─────────────
+    // ── Inventory open / close ────────────────────────────────────────────────
+    public bool IsInventoryOpen()
+    {
+        return inventoryPanel != null && !inventoryPanel.ClassListContains("hidden");
+    }
+
+    public void OpenInventory()
+    {
+        inventoryPanel.RemoveFromClassList("hidden");
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible   = true;
+        SetVSOpen(true);
+        RefreshRecipeList(invRecipeList, false);
+        InventoryManager.Instance?.RefreshUI();
+    }
+
+    public void CloseInventory()
+    {
+        inventoryPanel.AddToClassList("hidden");
+        CancelDrag();
+        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+        UnityEngine.Cursor.visible   = false;
+        SetVSOpen(false);
+    }
+
+    void SetVSOpen(bool open)
+    {
+        try { Variables.Scene(SceneManager.GetActiveScene()).Set("isOpen", open); }
+        catch { }
+    }
+
+    // ── Inventory interaction ─────────────────────────────────────────────────
     void SetupInventoryInteraction()
     {
         if (invSlots == null) return;
@@ -154,10 +206,8 @@ public class UIManager : MonoBehaviour
                 var slot = InventoryManager.Instance.GetSlot(index);
                 if (slot.item == null) return;
 
-                // Select the slot
                 InventoryManager.Instance.SetSelectedSlot(index);
 
-                // Start drag
                 isDragging    = true;
                 dragFromIndex = index;
 
@@ -195,7 +245,6 @@ public class UIManager : MonoBehaviour
             {
                 if (!isDragging) return;
 
-                // Drop on equipment slot
                 if (equipAxeSlot != null && equipAxeSlot.worldBound.Contains(evt.position))
                 {
                     InventoryManager.Instance?.EquipFromSlot(dragFromIndex);
@@ -211,7 +260,6 @@ public class UIManager : MonoBehaviour
             });
         }
 
-        // Equipment slot: click to unequip
         equipAxeSlot?.RegisterCallback<PointerDownEvent>(evt =>
         {
             InventoryManager.Instance?.UnequipAxe();
@@ -239,24 +287,18 @@ public class UIManager : MonoBehaviour
         isDragging    = false;
         dragFromIndex = -1;
         dragGhost?.AddToClassList("hidden");
-
         for (int i = 0; i < SLOT_COUNT; i++)
-        {
             invSlots[i]?.RemoveFromClassList("inv-slot-drag-over");
-        }
     }
 
     // ── Selected slot highlight ───────────────────────────────────────────────
     public void RefreshSelectedSlot(int selectedIndex)
     {
         for (int i = 0; i < SLOT_COUNT; i++)
-        {
-            if (invSlots[i] == null) continue;
-            invSlots[i].EnableInClassList("inv-slot-selected", i == selectedIndex);
-        }
+            invSlots[i]?.EnableInClassList("inv-slot-selected", i == selectedIndex);
     }
 
-    // ── Refresh inventory ─────────────────────────────────────────────────────
+    // ── Refresh inventory slots ───────────────────────────────────────────────
     public void RefreshInventorySlots(InventoryManager.InventorySlot[] slots)
     {
         for (int i = 0; i < SLOT_COUNT; i++)
@@ -317,8 +359,8 @@ public class UIManager : MonoBehaviour
         foreach (RecipeData recipe in allRecipes)
         {
             if (recipe == null) continue;
-            if (campfireOnly && !recipe.requiresCampfire) continue;
-            if (!campfireOnly && recipe.requiresCampfire) continue;
+            if (campfireOnly  && !recipe.requiresCampfire) continue;
+            if (!campfireOnly &&  recipe.requiresCampfire) continue;
 
             Button btn = new Button();
             btn.AddToClassList("recipe-btn");
@@ -327,13 +369,13 @@ public class UIManager : MonoBehaviour
             title.AddToClassList("recipe-title");
             btn.Add(title);
 
-            string costStr = "";
-            bool canAfford = true;
+            string costStr  = "";
+            bool   canAfford = true;
             foreach (var ing in recipe.ingredients)
             {
                 int have = InventoryManager.Instance.GetItemCount(ing.item);
                 if (costStr.Length > 0) costStr += "  +  ";
-                costStr += $"{ing.amount}x {ing.item.itemName}  ({have})";
+                costStr += $"{ing.amount}x {ing.item.itemName} ({have})";
                 if (have < ing.amount) canAfford = false;
             }
 
@@ -357,44 +399,13 @@ public class UIManager : MonoBehaviour
             InventoryManager.Instance.RemoveItem(ing.item, ing.amount);
         InventoryManager.Instance.AddItem(recipe.result, recipe.resultCount);
 
-        if (IsInventoryOpen())   RefreshRecipeList(invRecipeList, false);
-        if (IsCraftingOpen())    RefreshRecipeList(campfireRecipeList, true);
-    }
-
-    // ── Inventory open / close ────────────────────────────────────────────────
-    public bool IsInventoryOpen()
-    {
-        return inventoryPanel != null && !inventoryPanel.ClassListContains("hidden");
-    }
-
-    public void OpenInventory()
-    {
-        inventoryPanel.RemoveFromClassList("hidden");
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible   = true;
-        SetVSOpen(true);
-        RefreshRecipeList(invRecipeList, false);
-        InventoryManager.Instance?.RefreshUI();
-    }
-
-    public void CloseInventory()
-    {
-        inventoryPanel.AddToClassList("hidden");
-        CancelDrag();
-        UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-        UnityEngine.Cursor.visible   = false;
-        SetVSOpen(false);
-    }
-
-    void SetVSOpen(bool open)
-    {
-        try { Variables.Scene(SceneManager.GetActiveScene()).Set("isOpen", open); }
-        catch { }
+        if (IsInventoryOpen()) RefreshRecipeList(invRecipeList,      false);
+        if (IsCraftingOpen())  RefreshRecipeList(campfireRecipeList, true);
     }
 
     // ── HUD ───────────────────────────────────────────────────────────────────
-    public void SetChopProgress(float n)  { if (chopBar != null) chopBar.value = n; }
-    public void SetChopBarVisible(bool v) { if (chopBarContainer != null) chopBarContainer.EnableInClassList("hidden", !v); }
+    public void SetChopProgress(float n)  { if (chopBar          != null) chopBar.value = n; }
+    public void SetChopBarVisible(bool v) { if (chopBarContainer  != null) chopBarContainer.EnableInClassList("hidden", !v); }
 
     public void SetSunIcon(Sprite s, Color c)
     {
@@ -426,7 +437,7 @@ public class UIManager : MonoBehaviour
 
     public void SetFuel(float current, float max)
     {
-        if (fuelBar != null) fuelBar.value = current / max;
+        if (fuelBar  != null) fuelBar.value = current / max;
         if (fuelText != null) fuelText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
     }
 
@@ -438,12 +449,12 @@ public class UIManager : MonoBehaviour
                 if (pips[i] != null) pips[i].EnableInClassList("pip-active", i < level);
     }
 
-    public void SetFuelCost(string t)     { if (fuelCostText    != null) fuelCostText.text    = t; }
-    public void SetUpgradeCost(string t)  { if (upgradeCostText != null) upgradeCostText.text = t; }
-    public void SetWoodCount(string t)    { if (woodCountLabel  != null) woodCountLabel.text  = t; }
-    public void SetStoneCount(string t)   { if (stoneCountLabel != null) stoneCountLabel.text = t; }
-    public void SetAddFuelEnabled(bool e)  { addFuelBtn?.SetEnabled(e); }
-    public void SetUpgradeEnabled(bool e)  { upgradeBtn?.SetEnabled(e); }
-    public void OnAddFuelClicked(System.Action cb)  { if (addFuelBtn != null) addFuelBtn.clicked += cb; }
-    public void OnUpgradeClicked(System.Action cb)  { if (upgradeBtn != null) upgradeBtn.clicked += cb; }
+    public void SetFuelCost(string t)    { if (fuelCostText    != null) fuelCostText.text    = t; }
+    public void SetUpgradeCost(string t) { if (upgradeCostText != null) upgradeCostText.text = t; }
+    public void SetWoodCount(string t)   { if (woodCountLabel  != null) woodCountLabel.text  = t; }
+    public void SetStoneCount(string t)  { if (stoneCountLabel != null) stoneCountLabel.text = t; }
+    public void SetAddFuelEnabled(bool e) { addFuelBtn?.SetEnabled(e); }
+    public void SetUpgradeEnabled(bool e) { upgradeBtn?.SetEnabled(e); }
+    public void OnAddFuelClicked(System.Action cb) { if (addFuelBtn != null) addFuelBtn.clicked += cb; }
+    public void OnUpgradeClicked(System.Action cb) { if (upgradeBtn != null) upgradeBtn.clicked += cb; }
 }

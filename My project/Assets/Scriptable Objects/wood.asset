@@ -15,9 +15,10 @@ MonoBehaviour:
   itemName: Wood
   maxStackSize: 32
   icon: {fileID: 21300000, guid: 77102546f51c5604ab7a420c11d7cdea, type: 3}
-  heldPrefab: {fileID: 3264762874464593848, guid: 3010a8c585a39384d800b9925bfc2937,
+  isPlaceable: 0
+  placementPrefab: {fileID: 0}
+  heldPrefab: {fileID: 8784010404490382244, guid: 91e6ebd2d34f6de4da9914465faacc75,
     type: 3}
   holdOffset: {x: 0, y: 0, z: 0}
   holdRotation: {x: 0, y: 0, z: 0}
-  isPlaceable: 0
-  placementPrefab: {fileID: 0}
+  holdScale: {x: 1, y: 1, z: 1}

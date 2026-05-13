@@ -1,8 +1,11 @@
 using UnityEngine;
 using Unity.VisualScripting;
 
+/// Merged from PlayerController.cs and ItemHolder.cs.
+/// Attach to the root player GameObject.
 public class PlayerController : MonoBehaviour
 {
+    // ── Movement ──────────────────────────────────────────────────────────────
     [Header("Physics")]
     public float gravity = -9.81f;
 
@@ -12,11 +15,27 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Must match the run speed in your VS graph")]
     public float runSpeed  = 9f;
 
+    // ── Item holding ──────────────────────────────────────────────────────────
+    [Header("Item Holding")]
+    [Tooltip("Drag the RightHand (or equivalent) bone from the Hierarchy here.")]
+    public Transform handBone;
+
+    public static PlayerController Instance { get; private set; }
+
     private CharacterController controller;
     private ScriptMachine       vsGraph;
     private Animator            animator;
     private float               velocityY;
     private Vector3             lastPosition;
+
+    private GameObject currentHeldObject;
+    private ItemData   currentHeldItem;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(this);
+    }
 
     void Start()
     {
@@ -28,7 +47,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (GameState.IsUIOpen())
+        if (UIManager.IsUIOpen())
         {
             if (vsGraph != null) vsGraph.enabled = false;
             animator.SetFloat("speed",      0f);
@@ -44,6 +63,7 @@ public class PlayerController : MonoBehaviour
         UpdateAnimation();
     }
 
+    // ── Movement ──────────────────────────────────────────────────────────────
     void ApplyGravity()
     {
         velocityY = controller.isGrounded ? -2f : velocityY + gravity * Time.deltaTime;
@@ -70,4 +90,37 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("speed",      speed);
         animator.SetFloat("DirectionZ", dirZ);
     }
+
+    // ── Item holding ──────────────────────────────────────────────────────────
+    public void UpdateHeldItem(ItemData item)
+    {
+        if (item == currentHeldItem) return;
+
+        if (currentHeldObject != null)
+        {
+            Destroy(currentHeldObject);
+            currentHeldObject = null;
+        }
+
+        currentHeldItem = item;
+
+        if (item == null || item.heldPrefab == null) return;
+
+        if (handBone == null)
+        {
+            Debug.LogWarning("[PlayerController] No hand bone assigned.");
+            return;
+        }
+
+        currentHeldObject = Instantiate(item.heldPrefab, handBone);
+        currentHeldObject.transform.localPosition    = item.holdOffset;
+        currentHeldObject.transform.localEulerAngles = item.holdRotation;
+        currentHeldObject.transform.localScale       = item.holdScale;
+        currentHeldObject.name = $"_Held_{item.itemName}";
+
+        foreach (Rigidbody rb  in currentHeldObject.GetComponentsInChildren<Rigidbody>()) Destroy(rb);
+        foreach (Collider  col in currentHeldObject.GetComponentsInChildren<Collider>())  Destroy(col);
+    }
+
+    public void ClearHeldItem() => UpdateHeldItem(null);
 }

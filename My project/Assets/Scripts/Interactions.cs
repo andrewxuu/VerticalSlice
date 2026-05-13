@@ -31,18 +31,12 @@ public class Interactions : MonoBehaviour
     void Start()
     {
         animator = GetComponentInChildren<Animator>();
-        if (UIManager.Instance != null)
-            UIManager.Instance.SetChopBarVisible(false);
+        if (UIManager.Instance != null) UIManager.Instance.SetChopBarVisible(false);
     }
 
     void Update()
     {
-        if (GameState.IsUIOpen())
-        {
-            ClearHighlight();
-            ResetChop();
-            return;
-        }
+        if (UIManager.IsUIOpen()) { ClearHighlight(); ResetChop(); return; }
 
         GameObject nearest = GetBestInteractable();
 
@@ -54,18 +48,13 @@ public class Interactions : MonoBehaviour
 
         if (nearest != null && Input.GetKey(KeyCode.E))
         {
-            if (currentTarget != nearest)
-            {
-                ResetChop();
-                currentTarget = nearest;
-                currentDrop   = nearest.CompareTag("Tree") ? woodItem : stoneItem;
-            }
+            if (currentTarget != nearest) { ResetChop(); currentTarget = nearest; currentDrop = nearest.CompareTag("Tree") ? woodItem : stoneItem; }
 
             animator.SetBool("isChopping", true);
-            SetProgressBarVisible(true);
+            UIManager.Instance?.SetChopBarVisible(true);
 
             chopProgress += Time.deltaTime;
-            SetChopProgress(chopProgress / chopTime);
+            UIManager.Instance?.SetChopProgress(chopProgress / chopTime);
 
             if (chopProgress >= chopTime)
             {
@@ -91,17 +80,11 @@ public class Interactions : MonoBehaviour
         foreach (Collider hit in hits)
         {
             if (!hit.CompareTag("Tree") && !hit.CompareTag("Rock")) continue;
-
             Vector3 toTarget = hit.bounds.center - transform.position;
             float   dist     = toTarget.magnitude;
             if (dist < 0.01f) continue;
-
             float score = Vector3.Dot(transform.forward, toTarget / dist) / dist;
-            if (score > bestScore)
-            {
-                bestScore = score;
-                best      = hit.gameObject;
-            }
+            if (score > bestScore) { bestScore = score; best = hit.gameObject; }
         }
 
         return best;
@@ -142,10 +125,8 @@ public class Interactions : MonoBehaviour
         GameObject drop = Instantiate(prefab, position + Vector3.up * 0.5f, Random.rotation);
 
         PickupDrop pickup = drop.GetComponent<PickupDrop>();
-        if (pickup != null)
-            pickup.item = item;
-        else
-            Debug.LogWarning("[Interactions] PickupDrop component missing on drop prefab.");
+        if (pickup != null) pickup.item = item;
+        else Debug.LogWarning("[Interactions] PickupDrop component missing on drop prefab.");
 
         Rigidbody rb = drop.GetComponent<Rigidbody>();
         if (rb != null)
@@ -157,27 +138,15 @@ public class Interactions : MonoBehaviour
         Destroy(drop, dropLifetime);
     }
 
-    // ── UI helpers ─────────────────────────────────────────────────────────────
-    void SetChopProgress(float normalized)
-    {
-        if (UIManager.Instance != null)
-            UIManager.Instance.SetChopProgress(normalized);
-    }
-
-    void SetProgressBarVisible(bool visible)
-    {
-        if (UIManager.Instance != null)
-            UIManager.Instance.SetChopBarVisible(visible);
-    }
-
+    // ── Helpers ────────────────────────────────────────────────────────────────
     void ResetChop()
     {
         chopProgress  = 0f;
         currentTarget = null;
         currentDrop   = null;
         animator.SetBool("isChopping", false);
-        SetProgressBarVisible(false);
-        SetChopProgress(0f);
+        UIManager.Instance?.SetChopBarVisible(false);
+        UIManager.Instance?.SetChopProgress(0f);
     }
 
     void OnDrawGizmosSelected()
