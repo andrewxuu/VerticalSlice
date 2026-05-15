@@ -16,7 +16,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: c105022d1bb873b4eb65f602c1cfa7d9, type: 3}
   ingredients:
   - item: {fileID: 11400000, guid: b7219f2fb4a55bc46b6ee9c12e767430, type: 2}
-    amount: 2
+    amount: 0
   result: {fileID: 11400000, guid: 2aa4f7807dcbc544188e0fe8f681018e, type: 2}
   resultCount: 1
   requiresCampfire: 0

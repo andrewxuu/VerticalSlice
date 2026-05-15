@@ -4,8 +4,6 @@ public class Interactions : MonoBehaviour
 {
     [Header("Interaction Settings")]
     public float interactRange = 2f;
-    public float chopTime      = 2f;
-
     [Header("Item Drops")]
     public ItemData woodItem;
     public ItemData stoneItem;
@@ -21,6 +19,7 @@ public class Interactions : MonoBehaviour
 
     private Animator   animator;
     private float      chopProgress;
+    private float      effectiveChopTime;   // chopTime adjusted by held tool
     private GameObject currentTarget;
     private ItemData   currentDrop;
 
@@ -48,15 +47,21 @@ public class Interactions : MonoBehaviour
 
         if (nearest != null && Input.GetKey(KeyCode.E))
         {
-            if (currentTarget != nearest) { ResetChop(); currentTarget = nearest; currentDrop = nearest.CompareTag("Tree") ? woodItem : stoneItem; }
+            if (currentTarget != nearest)
+            {
+                ResetChop();
+                currentTarget     = nearest;
+                currentDrop       = nearest.CompareTag("Tree") ? woodItem : stoneItem;
+                effectiveChopTime = GetEffectiveChopTime(nearest);
+            }
 
             animator.SetBool("isChopping", true);
             UIManager.Instance?.SetChopBarVisible(true);
 
             chopProgress += Time.deltaTime;
-            UIManager.Instance?.SetChopProgress(chopProgress / chopTime);
+            UIManager.Instance?.SetChopProgress(chopProgress / effectiveChopTime);
 
-            if (chopProgress >= chopTime)
+            if (chopProgress >= effectiveChopTime)
             {
                 SpawnDrop(currentDrop, currentTarget.transform.position);
                 ClearHighlight();
@@ -68,6 +73,21 @@ public class Interactions : MonoBehaviour
         }
 
         ResetChop();
+    }
+
+    // ── Returns chopTime divided by the multiplier when the correct tool is held ──
+    float GetEffectiveChopTime(GameObject target)
+    {
+        if (currentDrop == null) return 2f;
+
+        ItemData held = InventoryManager.Instance?.GetSelectedItem();
+        bool isCorrectTool = held != null
+            && ((target.CompareTag("Tree") && held.toolType == ToolType.Axe)
+            || (target.CompareTag("Rock") && held.toolType == ToolType.Pickaxe));
+
+        return isCorrectTool
+            ? currentDrop.baseChopTime / Mathf.Max(0.1f, held.chopSpeedMultiplier)
+            : currentDrop.baseChopTime;
     }
 
     // ── Facing-weighted selection ──────────────────────────────────────────────
@@ -141,9 +161,10 @@ public class Interactions : MonoBehaviour
     // ── Helpers ────────────────────────────────────────────────────────────────
     void ResetChop()
     {
-        chopProgress  = 0f;
-        currentTarget = null;
-        currentDrop   = null;
+        chopProgress      = 0f;
+        effectiveChopTime = 0f;
+        currentTarget     = null;
+        currentDrop       = null;
         animator.SetBool("isChopping", false);
         UIManager.Instance?.SetChopBarVisible(false);
         UIManager.Instance?.SetChopProgress(0f);

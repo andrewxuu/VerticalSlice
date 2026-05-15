@@ -23,35 +23,39 @@ public class UIManager : MonoBehaviour
     private VisualElement[] hbIcons;
     private Label[]         hbCounts;
 
-    // Inventory panel
-    private VisualElement   inventoryPanel;
-    private VisualElement[] invSlots;
-    private VisualElement[] invIcons;
-    private Label[]         invCounts;
-    private Label[]         invNames;
-    private VisualElement   dragGhost;
-
-    // Equipment
+    // ── Tab inventory panel (equipment only, left side) ───────────────────────
+    private VisualElement inventoryPanel;
+    private VisualElement dragGhost;
     private VisualElement equipAxeSlot;
     private VisualElement equipAxeIcon;
     private Label         equipAxeLabel;
 
-    // Crafting
-    private ScrollView invRecipeList;
-
-    // Drag state
-    private bool isDragging;
-    private int  dragFromIndex = -1;
-
-    // Campfire panel
+    // ── Shared right panel: backpack + crafting ───────────────────────────────
+    // Used by BOTH Tab (inventory) and Campfire (C key)
     private VisualElement   craftingPanel;
+    private ScrollView      campfireRecipeList;
+    private VisualElement[] cfSlots;
+    private VisualElement[] cfIcons;
+    private Label[]         cfCounts;
+
+    // Backpack grid (inside crafting-panel, used in both states)
+    private VisualElement[] invSlots;
+    private VisualElement[] invIcons;
+    private Label[]         invCounts;
+    private Label[]         invNames;
+
+    // ── Campfire status panel (left side) ────────────────────────────────────
+    private VisualElement   campfireStatusPanel;
     private ProgressBar     fuelBar;
     private Label           fuelText, shelterText;
     private VisualElement[] pips;
     private Button          addFuelBtn, upgradeBtn;
     private Label           fuelCostText, upgradeCostText;
     private Label           woodCountLabel, stoneCountLabel;
-    private ScrollView      campfireRecipeList;
+
+    // Drag state
+    private bool isDragging;
+    private int  dragFromIndex = -1;
 
     void Awake()
     {
@@ -63,7 +67,8 @@ public class UIManager : MonoBehaviour
 
         QueryHUD();
         QueryInventoryPanel();
-        QueryCraftingPanel();
+        QuerySharedCraftingPanel();
+        QueryCampfireStatusPanel();
         SetupInventoryInteraction();
     }
 
@@ -71,29 +76,22 @@ public class UIManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            if (IsInventoryOpen()) CloseInventory();
-            else if (!IsCraftingOpen()) OpenInventory();
+            if (IsInventoryOpen() && !IsCampfireOpen()) CloseInventory();
+            else if (!IsCampfireOpen())                 OpenInventory();
         }
     }
 
-    // ── GameState (folded in from GameState.cs) ───────────────────────────────
-    // Any script that previously called GameState.IsUIOpen() now calls UIManager.IsUIOpen()
+    // ── GameState folded in ───────────────────────────────────────────────────
     public static bool IsUIOpen()
     {
-        // Check VS scene variable (used by the movement graph)
-        try
-        {
-            if ((bool)Variables.Scene(SceneManager.GetActiveScene()).Get("isOpen"))
-                return true;
-        }
+        try { if ((bool)Variables.Scene(SceneManager.GetActiveScene()).Get("isOpen")) return true; }
         catch { }
 
         if (Instance != null)
         {
             if (Instance.IsInventoryOpen()) return true;
-            if (Instance.IsCraftingOpen())  return true;
+            if (Instance.IsCampfireOpen())  return true;
         }
-
         return false;
     }
 
@@ -120,46 +118,53 @@ public class UIManager : MonoBehaviour
     {
         inventoryPanel = root.Q("inventory-panel");
         dragGhost      = root.Q("drag-ghost");
-
-        invSlots  = new VisualElement[SLOT_COUNT];
-        invIcons  = new VisualElement[SLOT_COUNT];
-        invCounts = new Label[SLOT_COUNT];
-        invNames  = new Label[SLOT_COUNT];
-        for (int i = 0; i < SLOT_COUNT; i++)
-        {
-            invSlots[i]  = root.Q($"inv-slot-{i}");
-            invIcons[i]  = root.Q($"inv-icon-{i}");
-            invCounts[i] = root.Q<Label>($"inv-count-{i}");
-            invNames[i]  = root.Q<Label>($"inv-name-{i}");
-        }
-
-        equipAxeSlot  = root.Q("equip-axe");
-        equipAxeIcon  = root.Q("equip-axe-icon");
-        equipAxeLabel = root.Q<Label>("equip-axe-label");
-        invRecipeList = root.Q<ScrollView>("recipe-list");
+        equipAxeSlot   = root.Q("equip-axe");
+        equipAxeIcon   = root.Q("equip-axe-icon");
+        equipAxeLabel  = root.Q<Label>("equip-axe-label");
     }
 
-    void QueryCraftingPanel()
+    void QuerySharedCraftingPanel()
     {
-        craftingPanel   = root.Q("crafting-panel");
-        fuelBar         = root.Q<ProgressBar>("fuel-bar");
-        fuelText        = root.Q<Label>("fuel-text");
-        shelterText     = root.Q<Label>("shelter-text");
-        addFuelBtn      = root.Q<Button>("add-fuel-btn");
-        upgradeBtn      = root.Q<Button>("upgrade-btn");
-        fuelCostText    = root.Q<Label>("fuel-cost-text");
-        upgradeCostText = root.Q<Label>("upgrade-cost-text");
-        woodCountLabel  = root.Q<Label>("wood-count");
-        stoneCountLabel = root.Q<Label>("stone-count");
+        craftingPanel      = root.Q("crafting-panel");
+        campfireRecipeList = root.Q<ScrollView>("campfire-recipe-list");
+
+        // Backpack slots (inside crafting-panel, shared across both UI states)
+        cfSlots  = new VisualElement[SLOT_COUNT];
+        cfIcons  = new VisualElement[SLOT_COUNT];
+        cfCounts = new Label[SLOT_COUNT];
+        for (int i = 0; i < SLOT_COUNT; i++)
+        {
+            cfSlots[i]  = root.Q($"cf-slot-{i}");
+            cfIcons[i]  = root.Q($"cf-icon-{i}");
+            cfCounts[i] = root.Q<Label>($"cf-count-{i}");
+        }
+
+        // Also wire inv-slot-N names to the cf slots so drag works
+        invSlots  = cfSlots;
+        invIcons  = cfIcons;
+        invCounts = cfCounts;
+        invNames  = new Label[SLOT_COUNT]; // compact grid has no name labels
+    }
+
+    void QueryCampfireStatusPanel()
+    {
+        campfireStatusPanel = root.Q("campfire-status-panel");
+        fuelBar             = root.Q<ProgressBar>("fuel-bar");
+        fuelText            = root.Q<Label>("fuel-text");
+        shelterText         = root.Q<Label>("shelter-text");
+        addFuelBtn          = root.Q<Button>("add-fuel-btn");
+        upgradeBtn          = root.Q<Button>("upgrade-btn");
+        fuelCostText        = root.Q<Label>("fuel-cost-text");
+        upgradeCostText     = root.Q<Label>("upgrade-cost-text");
+        woodCountLabel      = root.Q<Label>("wood-count");
+        stoneCountLabel     = root.Q<Label>("stone-count");
 
         pips = new VisualElement[3];
         for (int i = 0; i < 3; i++)
             pips[i] = root.Q($"pip-{i}");
-
-        campfireRecipeList = root.Q<ScrollView>("campfire-recipe-list");
     }
 
-    // ── Inventory open / close ────────────────────────────────────────────────
+    // ── Tab inventory (equipment left + shared backpack/crafting right) ────────
     public bool IsInventoryOpen()
     {
         return inventoryPanel != null && !inventoryPanel.ClassListContains("hidden");
@@ -168,21 +173,48 @@ public class UIManager : MonoBehaviour
     public void OpenInventory()
     {
         inventoryPanel.RemoveFromClassList("hidden");
+        craftingPanel.RemoveFromClassList("hidden");   // shared right panel
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible   = true;
         SetVSOpen(true);
-        RefreshRecipeList(invRecipeList, false);
+        RefreshRecipeList(campfireRecipeList, false);  // basic recipes in Tab
         InventoryManager.Instance?.RefreshUI();
     }
 
     public void CloseInventory()
     {
         inventoryPanel.AddToClassList("hidden");
+        craftingPanel.AddToClassList("hidden");        // hide shared right panel too
         CancelDrag();
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         UnityEngine.Cursor.visible   = false;
         SetVSOpen(false);
     }
+
+    // ── Campfire (status left + shared backpack/crafting right) ──────────────
+    public bool IsCampfireOpen()
+    {
+        return campfireStatusPanel != null && !campfireStatusPanel.ClassListContains("hidden");
+    }
+
+    public void ShowCampfirePanels()
+    {
+        campfireStatusPanel.RemoveFromClassList("hidden");
+        craftingPanel.RemoveFromClassList("hidden");   // shared right panel
+        RefreshRecipeList(campfireRecipeList, null);   // all recipes at campfire
+        RefreshBackpackSlots();
+    }
+
+    public void HideCampfirePanels()
+    {
+        campfireStatusPanel.AddToClassList("hidden");
+        craftingPanel.AddToClassList("hidden");
+    }
+
+    // Legacy names so CampfireInteraction compiles unchanged
+    public bool IsCraftingOpen()    => IsCampfireOpen();
+    public void ShowCraftingPanel() => ShowCampfirePanels();
+    public void HideCraftingPanel() => HideCampfirePanels();
 
     void SetVSOpen(bool open)
     {
@@ -190,24 +222,31 @@ public class UIManager : MonoBehaviour
         catch { }
     }
 
-    // ── Inventory interaction ─────────────────────────────────────────────────
+    // ── Inventory interaction (equipment slot + drag on backpack) ─────────────
     void SetupInventoryInteraction()
     {
-        if (invSlots == null) return;
+        // Equipment slot: click to unequip
+        equipAxeSlot?.RegisterCallback<PointerDownEvent>(evt =>
+        {
+            InventoryManager.Instance?.UnequipAxe();
+            evt.StopPropagation();
+        });
+
+        // Backpack slots in the shared crafting panel
+        if (cfSlots == null) return;
 
         for (int i = 0; i < SLOT_COUNT; i++)
         {
-            if (invSlots[i] == null) continue;
+            if (cfSlots[i] == null) continue;
             int index = i;
 
-            invSlots[i].RegisterCallback<PointerDownEvent>(evt =>
+            cfSlots[i].RegisterCallback<PointerDownEvent>(evt =>
             {
                 if (InventoryManager.Instance == null) return;
                 var slot = InventoryManager.Instance.GetSlot(index);
                 if (slot.item == null) return;
 
                 InventoryManager.Instance.SetSelectedSlot(index);
-
                 isDragging    = true;
                 dragFromIndex = index;
 
@@ -217,68 +256,57 @@ public class UIManager : MonoBehaviour
                     dragGhost.RemoveFromClassList("hidden");
                     MoveDragGhost(evt.position);
                 }
-
                 evt.StopPropagation();
             });
 
-            invSlots[i].RegisterCallback<PointerEnterEvent>(evt =>
+            cfSlots[i].RegisterCallback<PointerEnterEvent>(evt =>
             {
                 if (!isDragging || index == dragFromIndex) return;
-                invSlots[index].AddToClassList("inv-slot-drag-over");
+                cfSlots[index].AddToClassList("inv-slot-drag-over");
             });
 
-            invSlots[i].RegisterCallback<PointerLeaveEvent>(evt =>
+            cfSlots[i].RegisterCallback<PointerLeaveEvent>(evt =>
             {
-                invSlots[index].RemoveFromClassList("inv-slot-drag-over");
+                cfSlots[index].RemoveFromClassList("inv-slot-drag-over");
             });
         }
 
-        if (inventoryPanel != null)
+        craftingPanel?.RegisterCallback<PointerMoveEvent>(evt =>
         {
-            inventoryPanel.RegisterCallback<PointerMoveEvent>(evt =>
+            if (!isDragging) return;
+            MoveDragGhost(evt.position);
+        });
+
+        craftingPanel?.RegisterCallback<PointerUpEvent>(evt =>
+        {
+            if (!isDragging) return;
+
+            if (equipAxeSlot != null && equipAxeSlot.worldBound.Contains(evt.position))
             {
-                if (!isDragging) return;
-                MoveDragGhost(evt.position);
-            });
-
-            inventoryPanel.RegisterCallback<PointerUpEvent>(evt =>
-            {
-                if (!isDragging) return;
-
-                if (equipAxeSlot != null && equipAxeSlot.worldBound.Contains(evt.position))
-                {
-                    InventoryManager.Instance?.EquipFromSlot(dragFromIndex);
-                    CancelDrag();
-                    return;
-                }
-
-                int dropIndex = GetSlotUnderPointer(evt.position);
-                if (dropIndex >= 0 && dropIndex != dragFromIndex)
-                    InventoryManager.Instance?.SwapSlots(dragFromIndex, dropIndex);
-
+                InventoryManager.Instance?.EquipFromSlot(dragFromIndex);
                 CancelDrag();
-            });
-        }
+                return;
+            }
 
-        equipAxeSlot?.RegisterCallback<PointerDownEvent>(evt =>
-        {
-            InventoryManager.Instance?.UnequipAxe();
-            evt.StopPropagation();
+            int dropIndex = GetSlotUnderPointer(evt.position);
+            if (dropIndex >= 0 && dropIndex != dragFromIndex)
+                InventoryManager.Instance?.SwapSlots(dragFromIndex, dropIndex);
+
+            CancelDrag();
         });
     }
 
-    void MoveDragGhost(Vector2 position)
+    void MoveDragGhost(Vector2 pos)
     {
         if (dragGhost == null) return;
-        dragGhost.style.left = position.x - 24;
-        dragGhost.style.top  = position.y - 24;
+        dragGhost.style.left = pos.x - 24;
+        dragGhost.style.top  = pos.y - 24;
     }
 
-    int GetSlotUnderPointer(Vector2 position)
+    int GetSlotUnderPointer(Vector2 pos)
     {
         for (int i = 0; i < SLOT_COUNT; i++)
-            if (invSlots[i] != null && invSlots[i].worldBound.Contains(position))
-                return i;
+            if (cfSlots[i] != null && cfSlots[i].worldBound.Contains(pos)) return i;
         return -1;
     }
 
@@ -288,46 +316,59 @@ public class UIManager : MonoBehaviour
         dragFromIndex = -1;
         dragGhost?.AddToClassList("hidden");
         for (int i = 0; i < SLOT_COUNT; i++)
-            invSlots[i]?.RemoveFromClassList("inv-slot-drag-over");
+            cfSlots[i]?.RemoveFromClassList("inv-slot-drag-over");
     }
 
-    // ── Selected slot highlight ───────────────────────────────────────────────
-    public void RefreshSelectedSlot(int selectedIndex)
+    // ── Selected slot ─────────────────────────────────────────────────────────
+    public void RefreshSelectedSlot(int selected)
     {
         for (int i = 0; i < SLOT_COUNT; i++)
-            invSlots[i]?.EnableInClassList("inv-slot-selected", i == selectedIndex);
+            cfSlots[i]?.EnableInClassList("inv-slot-selected", i == selected);
     }
 
-    // ── Refresh inventory slots ───────────────────────────────────────────────
-    public void RefreshInventorySlots(InventoryManager.InventorySlot[] slots)
+    // ── Refresh backpack slots (compact grid in crafting-panel) ───────────────
+    void RefreshBackpackSlots()
     {
+        if (cfSlots == null || InventoryManager.Instance == null) return;
         for (int i = 0; i < SLOT_COUNT; i++)
         {
-            bool hasItem = i < slots.Length && slots[i].item != null;
+            var slot = InventoryManager.Instance.GetSlot(i);
+            bool has = slot.item != null;
+
+            if (cfIcons[i] != null)
+            {
+                cfIcons[i].style.backgroundImage = has ? new StyleBackground(slot.item.icon) : StyleKeyword.None;
+                cfIcons[i].style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (cfCounts[i] != null)
+                cfCounts[i].text = has && slot.count > 1 ? slot.count.ToString() : "";
+            if (cfSlots[i] != null)
+                cfSlots[i].EnableInClassList("inv-slot-empty", !has);
+        }
+    }
+
+    public void RefreshInventorySlots(InventoryManager.InventorySlot[] slots)
+    {
+        // Update hotbar
+        for (int i = 0; i < SLOT_COUNT; i++)
+        {
+            bool has = i < slots.Length && slots[i].item != null;
 
             if (hbIcons[i] != null)
             {
-                hbIcons[i].style.backgroundImage = hasItem ? new StyleBackground(slots[i].item.icon) : StyleKeyword.None;
-                hbIcons[i].style.display = hasItem ? DisplayStyle.Flex : DisplayStyle.None;
+                hbIcons[i].style.backgroundImage = has ? new StyleBackground(slots[i].item.icon) : StyleKeyword.None;
+                hbIcons[i].style.display = has ? DisplayStyle.Flex : DisplayStyle.None;
             }
             if (hbCounts[i] != null)
-                hbCounts[i].text = hasItem && slots[i].count > 1 ? slots[i].count.ToString() : "";
-
-            if (invIcons[i] != null)
-            {
-                invIcons[i].style.backgroundImage = hasItem ? new StyleBackground(slots[i].item.icon) : StyleKeyword.None;
-                invIcons[i].style.display = hasItem ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-            if (invCounts[i] != null)
-                invCounts[i].text = hasItem && slots[i].count > 1 ? slots[i].count.ToString() : "";
-            if (invNames[i] != null)
-                invNames[i].text = hasItem ? slots[i].item.itemName : "";
-            if (invSlots[i] != null)
-                invSlots[i].EnableInClassList("inv-slot-empty", !hasItem);
+                hbCounts[i].text = has && slots[i].count > 1 ? slots[i].count.ToString() : "";
         }
 
-        if (IsInventoryOpen())
-            RefreshRecipeList(invRecipeList, false);
+        // Update shared backpack panel
+        RefreshBackpackSlots();
+
+        // Refresh recipes if open
+        if (IsInventoryOpen()) RefreshRecipeList(campfireRecipeList, false);
+        if (IsCampfireOpen())  RefreshRecipeList(campfireRecipeList, null);
     }
 
     // ── Equipment ─────────────────────────────────────────────────────────────
@@ -351,7 +392,7 @@ public class UIManager : MonoBehaviour
     }
 
     // ── Recipe system ─────────────────────────────────────────────────────────
-    public void RefreshRecipeList(ScrollView list, bool campfireOnly)
+    public void RefreshRecipeList(ScrollView list, bool? campfireOnly)
     {
         if (list == null || allRecipes == null) return;
         list.contentContainer.Clear();
@@ -359,8 +400,8 @@ public class UIManager : MonoBehaviour
         foreach (RecipeData recipe in allRecipes)
         {
             if (recipe == null) continue;
-            if (campfireOnly  && !recipe.requiresCampfire) continue;
-            if (!campfireOnly &&  recipe.requiresCampfire) continue;
+            if (campfireOnly == true  && !recipe.requiresCampfire) continue;
+            if (campfireOnly == false &&  recipe.requiresCampfire) continue;
 
             Button btn = new Button();
             btn.AddToClassList("recipe-btn");
@@ -369,7 +410,18 @@ public class UIManager : MonoBehaviour
             title.AddToClassList("recipe-title");
             btn.Add(title);
 
-            string costStr  = "";
+            // Already crafted once — show as owned and disable
+            if (recipe.craftOnce && recipe.isCrafted)
+            {
+                Label owned = new Label("Already owned");
+                owned.AddToClassList("recipe-cost");
+                btn.Add(owned);
+                btn.SetEnabled(false);
+                list.contentContainer.Add(btn);
+                continue;
+            }
+
+            string costStr   = "";
             bool   canAfford = true;
             foreach (var ing in recipe.ingredients)
             {
@@ -399,13 +451,17 @@ public class UIManager : MonoBehaviour
             InventoryManager.Instance.RemoveItem(ing.item, ing.amount);
         InventoryManager.Instance.AddItem(recipe.result, recipe.resultCount);
 
-        if (IsInventoryOpen()) RefreshRecipeList(invRecipeList,      false);
-        if (IsCraftingOpen())  RefreshRecipeList(campfireRecipeList, true);
+        // Mark one-time recipes as used
+        if (recipe.craftOnce) recipe.isCrafted = true;
+
+        if (IsInventoryOpen()) RefreshRecipeList(campfireRecipeList, false);
+        if (IsCampfireOpen())  RefreshRecipeList(campfireRecipeList, null);
+        RefreshBackpackSlots();
     }
 
     // ── HUD ───────────────────────────────────────────────────────────────────
-    public void SetChopProgress(float n)  { if (chopBar          != null) chopBar.value = n; }
-    public void SetChopBarVisible(bool v) { if (chopBarContainer  != null) chopBarContainer.EnableInClassList("hidden", !v); }
+    public void SetChopProgress(float n)  { if (chopBar         != null) chopBar.value = n; }
+    public void SetChopBarVisible(bool v) { if (chopBarContainer != null) chopBarContainer.EnableInClassList("hidden", !v); }
 
     public void SetSunIcon(Sprite s, Color c)
     {
@@ -421,20 +477,7 @@ public class UIManager : MonoBehaviour
         moonIcon.style.unityBackgroundImageTintColor = c;
     }
 
-    // ── Campfire panel ────────────────────────────────────────────────────────
-    public bool IsCraftingOpen()
-    {
-        return craftingPanel != null && !craftingPanel.ClassListContains("hidden");
-    }
-
-    public void ShowCraftingPanel()
-    {
-        craftingPanel.RemoveFromClassList("hidden");
-        RefreshRecipeList(campfireRecipeList, true);
-    }
-
-    public void HideCraftingPanel() { craftingPanel.AddToClassList("hidden"); }
-
+    // ── Campfire status setters ───────────────────────────────────────────────
     public void SetFuel(float current, float max)
     {
         if (fuelBar  != null) fuelBar.value = current / max;
@@ -449,10 +492,10 @@ public class UIManager : MonoBehaviour
                 if (pips[i] != null) pips[i].EnableInClassList("pip-active", i < level);
     }
 
-    public void SetFuelCost(string t)    { if (fuelCostText    != null) fuelCostText.text    = t; }
-    public void SetUpgradeCost(string t) { if (upgradeCostText != null) upgradeCostText.text = t; }
-    public void SetWoodCount(string t)   { if (woodCountLabel  != null) woodCountLabel.text  = t; }
-    public void SetStoneCount(string t)  { if (stoneCountLabel != null) stoneCountLabel.text = t; }
+    public void SetFuelCost(string t)     { if (fuelCostText    != null) fuelCostText.text    = t; }
+    public void SetUpgradeCost(string t)  { if (upgradeCostText != null) upgradeCostText.text = t; }
+    public void SetWoodCount(string t)    { if (woodCountLabel  != null) woodCountLabel.text  = t; }
+    public void SetStoneCount(string t)   { if (stoneCountLabel != null) stoneCountLabel.text = t; }
     public void SetAddFuelEnabled(bool e) { addFuelBtn?.SetEnabled(e); }
     public void SetUpgradeEnabled(bool e) { upgradeBtn?.SetEnabled(e); }
     public void OnAddFuelClicked(System.Action cb) { if (addFuelBtn != null) addFuelBtn.clicked += cb; }

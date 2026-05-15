@@ -2476,8 +2476,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cd4a3c31903fea4ea18c3e3ed7f6187, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interactRange: 2
-  chopTime: 3
+  interactRange: 1
+  chopTime: 5
   woodItem: {fileID: 11400000, guid: b7219f2fb4a55bc46b6ee9c12e767430, type: 2}
   stoneItem: {fileID: 11400000, guid: e95c5ef0562b70546a417ac2bb64a900, type: 2}
   woodDropPrefab: {fileID: 8784010404490382244, guid: 91e6ebd2d34f6de4da9914465faacc75,

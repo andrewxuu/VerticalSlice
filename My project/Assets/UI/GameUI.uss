@@ -20,98 +20,71 @@
 /* ═══ PANEL OVERLAY ═══ */
 .panel-overlay { position: absolute; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: rgba(28,31,46,0.85); }
 
-/* ═══ WOOD PLANK FRAME ═══ */
-.wood-frame {
-    width: 92%;
-    height: 85%;
-    max-width: 1100px;
-    max-height: 680px;
-    background-color: rgb(139, 90, 43);
+/* Suppresses backdrop when two panels open together */
+.panel-overlay.no-backdrop { background-color: rgba(0,0,0,0); }
+
+/* Campfire panel — left side */
+#crafting-panel { justify-content: center; align-items: flex-start; padding-left: 8%; }
+
+/* Inventory panel — right side when shown with campfire */
+#inventory-panel.with-campfire { justify-content: center; align-items: flex-end; padding-right: 5%; }
+
+
+/* ═══ INVENTORY OVERLAY — matches campfire side panel positioning ═══ */
+.inv-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding-left: 3%;
+    padding-right: 3%;
+}
+
+/* Each floating panel card — matches campfire style exactly */
+.inv-card {
+    background-color: rgb(42, 31, 20);
     border-radius: 16px;
-    border-width: 10px;
-    border-color: rgb(61, 36, 16);
-    overflow: hidden;
-    flex-direction: column;
-}
-
-/* Header */
-.frame-header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: rgb(139, 90, 43);
-    border-bottom-width: 1px;
-    border-bottom-color: rgb(107, 68, 35);
-}
-
-.header-left { flex-direction: row; align-items: center; }
-.header-right { flex-direction: row; align-items: center; }
-
-.rivet {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: rgb(61, 36, 16);
     border-width: 2px;
-    border-color: rgb(201, 154, 106);
-    margin-right: 12px;
+    border-color: rgb(90, 74, 56);
+    overflow: hidden;
+    min-width: 220px;
+    max-width: 340px;
 }
 
-.frame-title {
-    font-size: 18px;
-    color: rgb(244, 228, 201);
-    -unity-font-style: bold;
+/* Vertical stack — backpack on top, recipes below */
+.inv-stack {
+    flex-direction: column;
+    min-width: 220px;
+    max-width: 340px;
 }
 
-/* Snow interior */
-.snow-interior {
-    flex-grow: 1;
-    background-color: rgb(232, 241, 248);
-    padding: 20px;
+.inv-stack .inv-card {
+    margin-bottom: 10px;
 }
 
-/* Footer */
-.frame-footer {
-    padding: 8px 20px;
-    background-color: rgb(139, 90, 43);
+.inv-stack .inv-card:last-child {
+    margin-bottom: 0;
+}
+
+.inv-card-body {
+    padding: 16px;
+}
+
+.inv-card-footer {
+    padding: 8px 16px;
+    background-color: rgb(58, 42, 26);
     border-top-width: 1px;
-    border-top-color: rgb(107, 68, 35);
+    border-top-color: rgb(90, 74, 56);
     align-items: center;
 }
 
-.footer-hint {
-    font-size: 11px;
-    color: rgb(244, 228, 201);
-    opacity: 0.8;
-}
-
-/* ═══ THREE COLUMN LAYOUT ═══ */
-.three-col {
-    flex-direction: row;
-    flex-grow: 1;
-    justify-content: space-between;
-}
-
-.col-left {
-    width: 220px;
-    padding-right: 16px;
-}
-
-.col-center {
-    flex-grow: 1;
-    padding: 0 16px;
-    align-items: center;
-}
-
-.col-right {
-    width: 250px;
-    padding-left: 16px;
-}
-
+/* ═══ EQUIPMENT SLOTS ═══ */
 .col-section-label {
     font-size: 10px;
-    color: rgb(95, 94, 90);
+    color: rgb(176, 160, 144);
     -unity-font-style: bold;
     letter-spacing: 0.5px;
     margin-bottom: 10px;
@@ -119,11 +92,9 @@
 
 .col-divider {
     height: 1px;
-    background-color: rgb(181, 212, 244);
-    margin: 14px 0;
+    background-color: rgb(90, 74, 56);
+    margin: 12px 0;
 }
-
-/* ═══ EQUIPMENT SLOTS ═══ */
 .equip-row {
     flex-direction: row;
     flex-wrap: wrap;
@@ -135,20 +106,20 @@
     width: 58px;
     height: 58px;
     margin: 0 6px 8px 0;
-    background-color: rgb(244, 248, 252);
+    background-color: rgb(58, 42, 26);
     border-width: 1.2px;
-    border-color: rgb(181, 212, 244);
+    border-color: rgb(90, 74, 56);
     border-radius: 6px;
     align-items: center;
     justify-content: center;
     flex-direction: column;
 }
 
-.equip-slot-sm:hover { border-color: rgb(55, 138, 221); }
+.equip-slot-sm:hover { border-color: rgb(239, 159, 39); }
 
 .equip-slot-empty-dashed {
-    border-color: rgb(181, 212, 244);
-    opacity: 0.7;
+    border-color: rgb(90, 74, 56);
+    opacity: 0.5;
 }
 
 .equip-icon-sm {
@@ -159,12 +130,12 @@
 
 .equip-plus {
     font-size: 20px;
-    color: rgb(181, 212, 244);
+    color: rgb(90, 74, 56);
 }
 
 .equip-slot-label {
     font-size: 9px;
-    color: rgb(95, 94, 90);
+    color: rgb(138, 122, 104);
     position: absolute;
     bottom: -14px;
 }
@@ -174,16 +145,16 @@
     width: 68px;
     height: 56px;
     margin: 0 8px 8px 0;
-    background-color: rgb(244, 248, 252);
+    background-color: rgb(58, 42, 26);
     border-width: 1.8px;
-    border-color: rgb(55, 138, 221);
+    border-color: rgb(239, 159, 39);
     border-radius: 6px;
     align-items: center;
     justify-content: center;
     flex-direction: column;
 }
 
-.equip-slot-tool:hover { background-color: rgb(230, 241, 251); }
+.equip-slot-tool:hover { background-color: rgb(74, 54, 34); border-color: rgb(239, 159, 39); }
 
 .equip-icon-tool {
     width: 36px;
@@ -193,37 +164,39 @@
 
 .equip-slot-label-bold {
     font-size: 9px;
-    color: rgb(44, 44, 42);
+    color: rgb(245, 220, 192);
     -unity-font-style: bold;
     position: absolute;
     bottom: -14px;
 }
 
 .equip-slot-filled {
-    border-color: rgb(55, 138, 221);
-    background-color: rgb(230, 241, 251);
+    border-color: rgb(239, 159, 39);
+    background-color: rgb(74, 54, 34);
 }
 
 /* ═══ BACKPACK CARD ═══ */
 .backpack-card {
     width: 100%;
     max-width: 400px;
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(42, 31, 20);
     border-width: 1.5px;
-    border-color: rgb(181, 212, 244);
+    border-color: rgb(90, 74, 56);
     border-radius: 10px;
     overflow: hidden;
 }
 
 .backpack-header {
-    background-color: rgb(55, 138, 221);
+    background-color: rgb(58, 42, 26);
     padding: 8px 16px;
     align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(90, 74, 56);
 }
 
 .backpack-title {
-    font-size: 14px;
-    color: rgb(255, 255, 255);
+    font-size: 13px;
+    color: rgb(245, 220, 192);
     -unity-font-style: bold;
     letter-spacing: 1px;
 }
@@ -231,7 +204,7 @@
 .inv-grid {
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 16px;
+    padding: 12px;
     justify-content: center;
 }
 
@@ -239,9 +212,9 @@
     width: 54px;
     height: 54px;
     margin: 3px;
-    background-color: rgb(244, 248, 252);
+    background-color: rgb(58, 42, 26);
     border-width: 1.2px;
-    border-color: rgb(181, 212, 244);
+    border-color: rgb(90, 74, 56);
     border-radius: 6px;
     align-items: center;
     justify-content: center;
@@ -249,30 +222,30 @@
 }
 
 .inv-slot:hover {
-    border-color: rgb(55, 138, 221);
-    background-color: rgb(230, 241, 251);
+    border-color: rgb(239, 159, 39);
+    background-color: rgb(74, 54, 34);
 }
 
 .inv-slot-selected {
-    border-color: rgb(55, 138, 221);
+    border-color: rgb(239, 159, 39);
     border-width: 2px;
-    background-color: rgb(225, 240, 255);
+    background-color: rgb(74, 54, 34);
 }
 
 .inv-slot-empty {
-    border-color: rgb(181, 212, 244);
-    opacity: 0.5;
+    border-color: rgb(90, 74, 56);
+    opacity: 0.4;
 }
 
 .inv-slot-drag-over {
-    border-color: rgb(239, 159, 39);
+    border-color: rgb(29, 158, 117);
     border-width: 2px;
-    background-color: rgb(250, 238, 218);
+    background-color: rgb(20, 60, 40);
 }
 
 .slot-icon-lg {
-    width: 32px;
-    height: 32px;
+    width: 60px;
+    height: 60px;
     -unity-background-scale-mode: scale-to-fit;
 }
 
@@ -281,9 +254,9 @@
     bottom: 2px;
     right: 4px;
     font-size: 9px;
-    color: rgb(255, 255, 255);
+    color: rgb(245, 220, 192);
     -unity-font-style: bold;
-    background-color: rgb(61, 36, 16);
+    background-color: rgb(26, 20, 16);
     padding: 1px 4px;
     border-radius: 3px;
 }
@@ -292,7 +265,7 @@
     position: absolute;
     bottom: -14px;
     font-size: 8px;
-    color: rgb(95, 94, 90);
+    color: rgb(138, 122, 104);
     -unity-text-align: middle-center;
     white-space: nowrap;
 }
@@ -315,28 +288,28 @@
     flex-direction: column;
     padding: 8px 12px;
     margin-bottom: 6px;
-    background-color: rgb(244, 248, 252);
+    background-color: rgb(58, 42, 26);
     border-width: 1.5px;
-    border-color: rgb(181, 212, 244);
+    border-color: rgb(90, 74, 56);
     border-radius: 8px;
 }
 
 .recipe-btn:hover {
-    background-color: rgb(230, 241, 251);
-    border-color: rgb(55, 138, 221);
+    background-color: rgb(74, 54, 34);
+    border-color: rgb(239, 159, 39);
 }
 
 .recipe-btn:disabled { opacity: 0.4; }
 
 .recipe-title {
     font-size: 12px;
-    color: rgb(44, 44, 42);
+    color: rgb(245, 220, 192);
     -unity-font-style: bold;
 }
 
 .recipe-cost {
     font-size: 10px;
-    color: rgb(95, 94, 90);
+    color: rgb(138, 122, 104);
     margin-top: 2px;
 }
 
@@ -354,6 +327,7 @@
     border-width: 2px;
     border-color: rgb(90, 74, 56);
     overflow: hidden;
+    scale: 1.2;
 }
 
 .panel-header {
@@ -429,3 +403,95 @@
 
 .inv-summary { flex-direction: row; justify-content: center; padding: 12px 20px 16px 20px; margin-top: 8px; }
 .inv-summary-item { font-size: 12px; color: rgb(138,122,104); margin: 0 12px; }
+
+/* ═══ SIDE PANEL OVERLAYS (campfire) ═══ */
+/* Non-blocking overlays — no full backdrop so the character shows in the gap */
+.side-panel-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* Left side: crafting + inventory */
+.side-panel-left {
+    align-items: flex-start;
+    padding-left: 70%;
+}
+
+/* Right side: crafting + backpack */
+.side-panel-right {
+    align-items: flex-end;
+    padding-right: 3%;
+}
+
+/* Right card: crafting on top, inventory below */
+.campfire-right-card {
+    width: 320px;
+    flex-direction: column;
+    scale: 1.2;
+}
+
+.campfire-right-section {
+    background-color: rgb(42, 31, 20);
+    border-radius: 14px;
+    border-width: 2px;
+    border-color: rgb(90, 74, 56);
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.campfire-inv-section {
+    margin-bottom: 0;
+}
+
+.campfire-recipes-right {
+    padding: 8px 12px;
+    max-height: 200px;
+}
+
+.campfire-recipes-right .recipe-btn { background-color: rgb(58,42,26); border-color: rgb(90,74,56); }
+.campfire-recipes-right .recipe-btn:hover { background-color: rgb(74,54,34); border-color: rgb(239,159,39); }
+.campfire-recipes-right .recipe-title { color: rgb(245,220,192); }
+.campfire-recipes-right .recipe-cost  { color: rgb(138,122,104); }
+
+/* Compact inventory grid inside campfire UI */
+.inv-grid-compact {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    justify-content: center;
+}
+
+.inv-slot-sm {
+    width: 56px;
+    height: 56px;
+    margin: 3px;
+    background-color: rgb(58, 42, 26);
+    border-width: 1px;
+    border-color: rgb(90, 74, 56);
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.inv-slot-sm:hover {
+    border-color: rgb(239, 159, 39);
+}
+
+.slot-icon-sm {
+    width: 32px;
+    height: 32px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.slot-count-sm {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 9px;
+    color: rgb(245, 220, 192);
+    -unity-font-style: bold;
+}

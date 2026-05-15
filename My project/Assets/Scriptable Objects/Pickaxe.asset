@@ -14,10 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Pickaxe
   maxStackSize: 1
-  icon: {fileID: 21300000, guid: c105022d1bb873b4eb65f602c1cfa7d9, type: 3}
+  icon: {fileID: 21300000, guid: a5c9301eba8dee6449ecb27a9485d237, type: 3}
+  isPlaceable: 0
+  placementPrefab: {fileID: 0}
   heldPrefab: {fileID: 919132149155446097, guid: cfe273fbe570ff949aff162f59ab8db3,
     type: 3}
   holdOffset: {x: 0, y: 0, z: 0}
-  holdRotation: {x: 0, y: 0, z: 0}
-  isPlaceable: 0
-  placementPrefab: {fileID: 0}
+  holdRotation: {x: 160, y: -40, z: -80}
+  holdScale: {x: 1, y: 1, z: 1}
+  toolType: 2
+  chopSpeedMultiplier: 2

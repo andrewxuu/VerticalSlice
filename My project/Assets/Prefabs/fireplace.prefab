@@ -5006,6 +5006,8 @@ MonoBehaviour:
   player: {fileID: 0}
   fireLight: {fileID: 108928041325886192}
   maxLightIntensity: 2
+  fireVFX: {fileID: 0}
+  smokeVFX: {fileID: 0}
 --- !u!1 &1711917331786228
 GameObject:
   m_ObjectHideFlags: 0

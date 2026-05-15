@@ -15,9 +15,12 @@ MonoBehaviour:
   itemName: Axe
   maxStackSize: 1
   icon: {fileID: 21300000, guid: 223ff679927b8bc48a0bb2d48f84efa9, type: 3}
-  heldPrefab: {fileID: 919132149155446097, guid: 631eefae4c28e5a4493515ae647ec3cf,
-    type: 3}
-  holdOffset: {x: 0, y: 0, z: 0}
-  holdRotation: {x: 0, y: 0, z: 0}
   isPlaceable: 0
   placementPrefab: {fileID: 0}
+  heldPrefab: {fileID: 919132149155446097, guid: ea0b7c061f3211740b591e823d8d3943,
+    type: 3}
+  holdOffset: {x: 0, y: 0, z: 0}
+  holdRotation: {x: 160, y: -42, z: -90}
+  holdScale: {x: 1, y: 1, z: 1}
+  toolType: 1
+  chopSpeedMultiplier: 2

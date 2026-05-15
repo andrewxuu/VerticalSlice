@@ -18,6 +18,12 @@ public class RecipeData : ScriptableObject
     [Tooltip("If true, this recipe can only be crafted at the campfire.")]
     public bool requiresCampfire;
 
+    [Tooltip("If true, this recipe can only be crafted once per session.")]
+    public bool craftOnce;
+
+    // Runtime only — not serialized, so it resets every play session.
+    [System.NonSerialized] public bool isCrafted;
+
     [System.Serializable]
     public struct Ingredient
     {

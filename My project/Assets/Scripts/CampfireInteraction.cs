@@ -31,11 +31,12 @@ public class CampfireInteraction : MonoBehaviour
     public float      maxLightIntensity = 2f;
     public GameObject fireVFX;
 
-    private float         currentFuel;
-    private int           shelterLevel;
-    private bool          menuOpen;
-    private DayNightCycle dayNight;
-    private bool          buttonsWired;
+    private float            currentFuel;
+    private int              shelterLevel;
+    private bool             menuOpen;
+    private DayNightCycle    dayNight;
+    private bool             buttonsWired;
+    private ParticleSystem[] smokeSystems;
 
     void Start()
     {
@@ -52,6 +53,20 @@ public class CampfireInteraction : MonoBehaviour
         }
 
         dayNight = FindObjectOfType<DayNightCycle>();
+
+        // Cache any ParticleSystems on the campfire that live outside of fireVFX
+        // (these are the smoke systems that come bundled with the prefab)
+        var allPS     = GetComponentsInChildren<ParticleSystem>(true);
+        var smokeList = new System.Collections.Generic.List<ParticleSystem>();
+        foreach (var ps in allPS)
+        {
+            if (fireVFX == null || !ps.transform.IsChildOf(fireVFX.transform))
+                smokeList.Add(ps);
+        }
+        smokeSystems = smokeList.ToArray();
+
+        // Make sure smoke is off on spawn (no fuel yet)
+        foreach (var ps in smokeSystems) ps.Stop();
     }
 
     void Update()
@@ -68,8 +83,14 @@ public class CampfireInteraction : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (menuOpen)          CloseMenu();
-            else if (IsInRange())  OpenMenu();
+            if (menuOpen) CloseMenu();
+            else if (IsInRange())
+            {
+                // Close inventory first if it is open so only one menu is ever open
+                if (UIManager.Instance != null && UIManager.Instance.IsInventoryOpen())
+                    UIManager.Instance.CloseInventory();
+                OpenMenu();
+            }
         }
 
         if (menuOpen && !IsInRange()) CloseMenu();
@@ -102,7 +123,7 @@ public class CampfireInteraction : MonoBehaviour
     void OpenMenu()
     {
         menuOpen = true;
-        UIManager.Instance.ShowCraftingPanel();
+        UIManager.Instance.ShowCampfirePanels();
         if (dayNight != null) dayNight.timeMultiplier = 0f;
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible   = true;
@@ -112,7 +133,7 @@ public class CampfireInteraction : MonoBehaviour
     void CloseMenu()
     {
         menuOpen = false;
-        UIManager.Instance.HideCraftingPanel();
+        UIManager.Instance.HideCampfirePanels();
         if (dayNight != null) dayNight.timeMultiplier = 1f;
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         UnityEngine.Cursor.visible   = false;
@@ -152,7 +173,14 @@ public class CampfireInteraction : MonoBehaviour
     void UpdateFireVisuals()
     {
         bool hasFuel = currentFuel > 0f;
-        if (fireVFX   != null) fireVFX.SetActive(hasFuel);
+        if (fireVFX != null) fireVFX.SetActive(hasFuel);
+
+        // Play or stop smoke systems depending on whether the fire is burning
+        if (smokeSystems != null)
+            foreach (var ps in smokeSystems)
+                if (hasFuel) { if (!ps.isPlaying) ps.Play(); }
+                else         { if ( ps.isPlaying) ps.Stop();  }
+
         if (fireLight == null) return;
 
         if (!hasFuel) { fireLight.intensity = 0f; return; }
@@ -161,9 +189,9 @@ public class CampfireInteraction : MonoBehaviour
         fireLight.range     = baseWarmthRadius + shelterLevel * radiusPerLevel;
     }
 
-    public int   GetShelterLevel()  => shelterLevel;
-    public float GetWarmthRadius()  => baseWarmthRadius + shelterLevel * radiusPerLevel;
-    public bool  HasFuel()          => currentFuel > 0f;
+    public int   GetShelterLevel() => shelterLevel;
+    public float GetWarmthRadius() => baseWarmthRadius + shelterLevel * radiusPerLevel;
+    public bool  HasFuel()         => currentFuel > 0f;
 
     bool IsInRange()
     {
