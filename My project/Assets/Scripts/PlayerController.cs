@@ -1,8 +1,7 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Unity.VisualScripting;
 
-/// Merged from PlayerController.cs and ItemHolder.cs.
-/// Attach to the root player GameObject.
 public class PlayerController : MonoBehaviour
 {
     // ── Movement ──────────────────────────────────────────────────────────────
@@ -15,12 +14,40 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Must match the run speed in your VS graph")]
     public float runSpeed  = 9f;
 
+    // ── Snow ──────────────────────────────────────────────────────────────────
+    [Header("Snow")]
+    [Tooltip("If true, snow depth slows walkSpeed/runSpeed via SnowManager.MovementMultiplier.")]
+    public bool useSnowSlowdown = true;
+
+    // Base values captured at Start so we can rescale live without losing the original
+    private float baseWalkSpeed;
+    private float baseRunSpeed;
+
     // ── Item holding ──────────────────────────────────────────────────────────
     [Header("Item Holding")]
     [Tooltip("Drag the RightHand (or equivalent) bone from the Hierarchy here.")]
     public Transform handBone;
 
+    // ── Health ────────────────────────────────────────────────────────────────
+    [Header("Health")]
+    public float maxHealth = 100f;
+    private float currentHealth;
+
+    // ── Death ─────────────────────────────────────────────────────────────────
+    [Header("Death")]
+    [Tooltip("How long to wait after the death animation starts before showing the You Died screen. " +
+             "Match this to the length of your death animation clip.")]
+    public float deathAnimationLength = 2f;
+
+    [Tooltip("Name of the Trigger parameter on your Animator that plays the death clip.")]
+    public string deathTriggerName = "Death";
+
+    private bool isDead;
+
     public static PlayerController Instance { get; private set; }
+
+    /// Fired the moment the player dies. WarmthSystem subscribes here.
+    public static event System.Action OnPlayerDied;
 
     private CharacterController controller;
     private ScriptMachine       vsGraph;
@@ -31,6 +58,7 @@ public class PlayerController : MonoBehaviour
     private GameObject currentHeldObject;
     private ItemData   currentHeldItem;
 
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -39,14 +67,23 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        controller   = GetComponent<CharacterController>();
-        vsGraph      = GetComponent<ScriptMachine>();
-        animator     = GetComponentInChildren<Animator>();
-        lastPosition = transform.position;
+        controller    = GetComponent<CharacterController>();
+        vsGraph       = GetComponent<ScriptMachine>();
+        animator      = GetComponentInChildren<Animator>();
+        lastPosition  = transform.position;
+        currentHealth = maxHealth;
+        baseWalkSpeed = walkSpeed;
+        baseRunSpeed  = runSpeed;
+        UIManager.Instance?.SetHealth(currentHealth, maxHealth);
     }
 
     void Update()
     {
+        // No input or movement while dead
+        if (isDead) return;
+
+        UpdateSnowSpeeds();
+
         if (UIManager.IsUIOpen())
         {
             if (vsGraph != null) vsGraph.enabled = false;
@@ -61,6 +98,17 @@ public class PlayerController : MonoBehaviour
 
         ApplyGravity();
         UpdateAnimation();
+    }
+
+    // ── Snow slowdown ─────────────────────────────────────────────────────────
+    void UpdateSnowSpeeds()
+    {
+        float m = (useSnowSlowdown && SnowManager.Instance != null)
+            ? SnowManager.Instance.MovementMultiplier
+            : 1f;
+
+        walkSpeed = baseWalkSpeed * m;
+        runSpeed  = baseRunSpeed  * m;
     }
 
     // ── Movement ──────────────────────────────────────────────────────────────
@@ -123,4 +171,51 @@ public class PlayerController : MonoBehaviour
     }
 
     public void ClearHeldItem() => UpdateHeldItem(null);
+
+    // ── Health ────────────────────────────────────────────────────────────────
+    public void TakeDamage(float amount)
+    {
+        if (isDead) return;
+        currentHealth = Mathf.Max(0f, currentHealth - amount);
+        UIManager.Instance?.SetHealth(currentHealth, maxHealth);
+        if (currentHealth <= 0f) OnDeath();
+    }
+
+    void OnDeath()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        Debug.Log("[Player] Died.");
+
+        // Stop movement and VS graph immediately
+        if (vsGraph != null) vsGraph.enabled = false;
+        animator.SetFloat("speed",      0f);
+        animator.SetFloat("DirectionZ", 0f);
+        animator.SetBool("isChopping",  false);
+
+        // Play death animation
+        if (!string.IsNullOrEmpty(deathTriggerName))
+            animator.SetTrigger(deathTriggerName);
+
+        // Drop any held item visually
+        ClearHeldItem();
+
+        // Notify other systems (WarmthSystem resets via this event)
+        OnPlayerDied?.Invoke();
+
+        // Wait for animation then show the You Died screen
+        StartCoroutine(DeathSequence());
+    }
+
+    System.Collections.IEnumerator DeathSequence()
+    {
+        // Lock cursor so the UI is usable
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible   = true;
+
+        yield return new WaitForSeconds(deathAnimationLength);
+
+        UIManager.Instance?.ShowDeathScreen();
+    }
 }

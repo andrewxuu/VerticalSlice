@@ -22,3 +22,6 @@ MonoBehaviour:
   holdOffset: {x: 0, y: 0, z: 0}
   holdRotation: {x: 0, y: 0, z: 0}
   holdScale: {x: 0.5, y: 0.5, z: 0.5}
+  toolType: 2
+  baseChopTime: 5
+  chopSpeedMultiplier: 1

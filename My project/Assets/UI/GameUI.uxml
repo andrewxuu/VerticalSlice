@@ -1,37 +1,69 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-
-    <!-- ═══ HUD (always visible) ═══ -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=ed8ca25550dcbbe4094ce88587485c54&amp;type=3#GameUI" />
     <ui:VisualElement name="hud" class="hud">
+        <ui:VisualElement name="status-bars" class="status-bars">
+            <ui:VisualElement class="status-row">
+                <ui:Label text="❄" class="status-icon status-icon--warmth" />
+                <ui:VisualElement class="status-bar-track">
+                    <ui:ProgressBar name="warmth-bar" low-value="0" high-value="1" class="warmth-bar" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="status-row">
+                <ui:Label text="♥" class="status-icon status-icon--health" />
+                <ui:VisualElement class="status-bar-track">
+                    <ui:ProgressBar name="health-bar" low-value="0" high-value="1" class="health-bar" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
         <ui:VisualElement name="sky-icons" class="sky-icons">
             <ui:VisualElement name="sun-icon" class="sky-icon" />
             <ui:VisualElement name="moon-icon" class="sky-icon" />
         </ui:VisualElement>
-
         <ui:VisualElement name="chop-bar-container" class="chop-bar-container hidden">
-            <ui:ProgressBar name="chop-bar" class="chop-bar" low-value="0" high-value="1" />
+            <ui:Label text="Chopping…" class="chop-label" />
+            <ui:ProgressBar name="chop-bar" low-value="0" high-value="1" class="chop-bar" />
         </ui:VisualElement>
-
         <ui:VisualElement name="hotbar" class="hotbar">
-            <ui:VisualElement name="hb-0" class="hb-slot"><ui:VisualElement name="hb-icon-0" class="slot-icon" /><ui:Label name="hb-count-0" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-1" class="hb-slot"><ui:VisualElement name="hb-icon-1" class="slot-icon" /><ui:Label name="hb-count-1" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-2" class="hb-slot"><ui:VisualElement name="hb-icon-2" class="slot-icon" /><ui:Label name="hb-count-2" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-3" class="hb-slot"><ui:VisualElement name="hb-icon-3" class="slot-icon" /><ui:Label name="hb-count-3" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-4" class="hb-slot"><ui:VisualElement name="hb-icon-4" class="slot-icon" /><ui:Label name="hb-count-4" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-5" class="hb-slot"><ui:VisualElement name="hb-icon-5" class="slot-icon" /><ui:Label name="hb-count-5" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-6" class="hb-slot"><ui:VisualElement name="hb-icon-6" class="slot-icon" /><ui:Label name="hb-count-6" class="slot-count" /></ui:VisualElement>
-            <ui:VisualElement name="hb-7" class="hb-slot"><ui:VisualElement name="hb-icon-7" class="slot-icon" /><ui:Label name="hb-count-7" class="slot-count" /></ui:VisualElement>
+            <ui:VisualElement name="hb-0" class="hb-slot">
+                <ui:VisualElement name="hb-icon-0" class="slot-icon" />
+                <ui:Label name="hb-count-0" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-1" class="hb-slot">
+                <ui:VisualElement name="hb-icon-1" class="slot-icon" />
+                <ui:Label name="hb-count-1" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-2" class="hb-slot">
+                <ui:VisualElement name="hb-icon-2" class="slot-icon" />
+                <ui:Label name="hb-count-2" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-3" class="hb-slot">
+                <ui:VisualElement name="hb-icon-3" class="slot-icon" />
+                <ui:Label name="hb-count-3" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-4" class="hb-slot">
+                <ui:VisualElement name="hb-icon-4" class="slot-icon" />
+                <ui:Label name="hb-count-4" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-5" class="hb-slot">
+                <ui:VisualElement name="hb-icon-5" class="slot-icon" />
+                <ui:Label name="hb-count-5" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-6" class="hb-slot">
+                <ui:VisualElement name="hb-icon-6" class="slot-icon" />
+                <ui:Label name="hb-count-6" class="slot-count" />
+            </ui:VisualElement>
+            <ui:VisualElement name="hb-7" class="hb-slot">
+                <ui:VisualElement name="hb-icon-7" class="slot-icon" />
+                <ui:Label name="hb-count-7" class="slot-count" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
-
-    <!-- ═══ INVENTORY PANEL — Equipment only, left side (shares crafting-panel on right) ═══ -->
-    <ui:VisualElement name="inventory-panel" class="side-panel-overlay side-panel-left hidden">
+    <ui:VisualElement name="inventory-panel" picking-mode="Ignore" class="side-panel-overlay side-panel-left hidden">
         <ui:VisualElement class="panel-card">
-
             <ui:VisualElement class="panel-header">
                 <ui:Label text="Equipment" class="panel-title" />
                 <ui:Label text="Tab to close" class="panel-hint" />
             </ui:VisualElement>
-
             <ui:VisualElement class="section">
                 <ui:Label text="WORN" class="col-section-label" />
                 <ui:VisualElement class="equip-row">
@@ -48,7 +80,6 @@
                         <ui:Label text="Boots" class="equip-slot-label" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-
                 <ui:VisualElement class="col-divider" />
                 <ui:Label text="TOOLS" class="col-section-label" />
                 <ui:VisualElement class="equip-row">
@@ -62,30 +93,22 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-
         </ui:VisualElement>
-
         <ui:VisualElement name="drag-ghost" class="drag-ghost hidden" />
-
     </ui:VisualElement>
-
-    <!-- ═══ CAMPFIRE STATUS PANEL (left side) ═══ -->
-    <ui:VisualElement name="campfire-status-panel" class="side-panel-overlay side-panel-left hidden">
+    <ui:VisualElement name="campfire-status-panel" picking-mode="Ignore" class="side-panel-overlay side-panel-left hidden">
         <ui:VisualElement class="panel-card">
-
             <ui:VisualElement class="panel-header">
                 <ui:Label text="🔥 Campfire" class="panel-title" />
                 <ui:Label text="C to close" class="panel-hint" />
             </ui:VisualElement>
-
             <ui:VisualElement class="section">
                 <ui:VisualElement class="section-row">
                     <ui:Label text="Fuel" class="section-label" />
                     <ui:Label name="fuel-text" text="0 / 100" class="section-value" />
                 </ui:VisualElement>
-                <ui:ProgressBar name="fuel-bar" class="fuel-bar" low-value="0" high-value="1" />
+                <ui:ProgressBar name="fuel-bar" low-value="0" high-value="1" class="fuel-bar" />
             </ui:VisualElement>
-
             <ui:VisualElement class="section">
                 <ui:Label name="shelter-text" text="Shelter Level: 0 / 3" class="section-label" />
                 <ui:VisualElement class="level-pips">
@@ -94,60 +117,77 @@
                     <ui:VisualElement name="pip-2" class="pip" />
                 </ui:VisualElement>
             </ui:VisualElement>
-
             <ui:VisualElement class="divider" />
-
             <ui:Button name="add-fuel-btn" class="action-btn">
                 <ui:Label text="Add Fuel" class="action-title" />
                 <ui:Label name="fuel-cost-text" text="1 wood" class="action-cost" />
             </ui:Button>
-
             <ui:Button name="upgrade-btn" class="action-btn">
                 <ui:Label text="Upgrade Shelter" class="action-title" />
                 <ui:Label name="upgrade-cost-text" text="3 wood + 2 stone" class="action-cost" />
             </ui:Button>
-
             <ui:VisualElement class="inv-summary">
-                <ui:Label name="wood-count"  text="Wood: 0"  class="inv-summary-item" />
+                <ui:Label name="wood-count" text="Wood: 0" class="inv-summary-item" />
                 <ui:Label name="stone-count" text="Stone: 0" class="inv-summary-item" />
             </ui:VisualElement>
-
         </ui:VisualElement>
     </ui:VisualElement>
-
-    <!-- ═══ CAMPFIRE CRAFTING + INVENTORY PANEL (right side) ═══ -->
-    <ui:VisualElement name="crafting-panel" class="side-panel-overlay side-panel-right hidden">
+    <ui:VisualElement name="crafting-panel" picking-mode="Ignore" class="side-panel-overlay side-panel-right hidden">
         <ui:VisualElement class="campfire-right-card">
-
-            <!-- Inventory grid (now on top) -->
             <ui:VisualElement class="campfire-right-section">
                 <ui:VisualElement class="panel-header">
                     <ui:Label text="Backpack" class="panel-title" />
                 </ui:VisualElement>
-
                 <ui:VisualElement class="inv-grid-compact">
-                    <ui:VisualElement name="cf-slot-0" class="inv-slot-sm"><ui:VisualElement name="cf-icon-0" class="slot-icon-sm" /><ui:Label name="cf-count-0" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-1" class="inv-slot-sm"><ui:VisualElement name="cf-icon-1" class="slot-icon-sm" /><ui:Label name="cf-count-1" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-2" class="inv-slot-sm"><ui:VisualElement name="cf-icon-2" class="slot-icon-sm" /><ui:Label name="cf-count-2" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-3" class="inv-slot-sm"><ui:VisualElement name="cf-icon-3" class="slot-icon-sm" /><ui:Label name="cf-count-3" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-4" class="inv-slot-sm"><ui:VisualElement name="cf-icon-4" class="slot-icon-sm" /><ui:Label name="cf-count-4" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-5" class="inv-slot-sm"><ui:VisualElement name="cf-icon-5" class="slot-icon-sm" /><ui:Label name="cf-count-5" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-6" class="inv-slot-sm"><ui:VisualElement name="cf-icon-6" class="slot-icon-sm" /><ui:Label name="cf-count-6" class="slot-count-sm" /></ui:VisualElement>
-                    <ui:VisualElement name="cf-slot-7" class="inv-slot-sm"><ui:VisualElement name="cf-icon-7" class="slot-icon-sm" /><ui:Label name="cf-count-7" class="slot-count-sm" /></ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-0" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-0" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-0" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-1" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-1" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-1" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-2" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-2" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-2" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-3" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-3" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-3" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-4" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-4" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-4" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-5" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-5" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-5" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-6" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-6" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-6" class="slot-count-sm" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="cf-slot-7" class="inv-slot-sm">
+                        <ui:VisualElement name="cf-icon-7" class="slot-icon-sm" />
+                        <ui:Label name="cf-count-7" class="slot-count-sm" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
-
             </ui:VisualElement>
-
-            <!-- Campfire recipes (now on bottom) -->
             <ui:VisualElement class="campfire-right-section campfire-inv-section">
                 <ui:VisualElement class="panel-header">
                     <ui:Label text="Crafting" class="panel-title" />
                 </ui:VisualElement>
                 <ui:ScrollView name="campfire-recipe-list" class="recipe-list campfire-recipes-right" />
             </ui:VisualElement>
-
         </ui:VisualElement>
     </ui:VisualElement>
-
+    <ui:VisualElement name="death-screen" class="death-screen hidden">
+        <ui:VisualElement class="death-card">
+            <ui:Label text="YOU DIED" class="death-title" />
+            <ui:Label text="The cold claimed you." class="death-subtitle" />
+            <ui:Button name="restart-btn" class="restart-btn">
+                <ui:Label text="Try Again" class="restart-label" />
+            </ui:Button>
+        </ui:VisualElement>
+    </ui:VisualElement>
 </ui:UXML>
-

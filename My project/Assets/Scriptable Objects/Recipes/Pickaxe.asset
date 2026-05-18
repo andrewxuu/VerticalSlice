@@ -21,4 +21,5 @@ MonoBehaviour:
     amount: 0
   result: {fileID: 11400000, guid: fd56be0ec8a52cb479b224a04c323226, type: 2}
   resultCount: 1
-  requiresCampfire: 0
+  requiresCampfire: 1
+  craftOnce: 1
