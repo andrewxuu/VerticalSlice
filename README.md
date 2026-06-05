@@ -56,7 +56,12 @@ On the C# side, UIManager.cs, CampfireInteraction.cs, and CampfirePlacer.cs all 
 
 
 ## Milestone 3 Devlog
-Milestone 3 Devlog goes here.
+1. The snow shader is a custom URP ShaderGraph applied to every hex tile on the map. It can be seen in-game once night begins and snow starts accumulating on the terrain. The graph handles two things: physically raising the top surface of each tile with vertex displacement, and blending the tile color to white as snow deepens. In the vertex stage, a Normal Vector node dotted against a world up vector (0, 1, 0) produces a mask that is 1 on flat top faces and 0 on vertical side faces. This mask is sharpened with a subtract and multiply before being clamped, so only near-horizontal surfaces receive snow. The mask is then scaled by _SnowDepth, a global float that SnowManager.cs updates every frame, to produce the final displacement amount. In the fragment stage, the same mask drives a Lerp between the base texture color and a white snow color, and a second Lerp raises the smoothness value so snowy surfaces appear shinier. Both feed into a URP Lit master node so the snow responds to scene lighting and shadows like any other surface.
+
+3.  Based on playtesting feedback, the biggest pain point was that players had no sense of urgency or consequence during the day -- the warmth meter only started mattering at night, so the daytime loop felt aimless. To address this, I tuned the WarmthSystem drain and regen rates so the transition from day to night is more immediately felt, and I added a visual cue by tinting the warmth bar icy-blue at night (using the warmth-cold USS class) versus amber during the day, giving players a clear at-a-glance read on their current risk state.
+   
+4. The major addition since Milestone 2 is the snow accumulation system, which ties directly into the core survival loop. SnowManager.cs tracks a CurrentDepth value that rises during night and partially melts during the day, and broadcasts it each frame to all terrain shaders via a global shader property. As snow deepens, it also reduces the player's movement speed through MovementMultiplier, making nighttime resource runs progressively harder across the three-night arc. SnowParticleController.cs drives a particle emitter that fades snowfall in at dusk and out at dawn, matching the same time thresholds used by DayNightCycle.cs. Together these systems mean snow is not cosmetic -- it slows the player, signals danger, and creates a visible record of how deep into the survival run the player is.
+   
 ## Milestone 4 Devlog
 Milestone 4 Devlog goes here.
 ## Final Devlog
@@ -67,5 +72,6 @@ Final Devlog goes here.
 - [Objects](https://kaylousberg.itch.io/resource-bits) 
 - [Player](https://kaylousberg.itch.io/kaykit-character-animations) 
 - [Camping Objects](https://forsunka.itch.io/low-poly-camping-asset)
+
 
 
